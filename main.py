@@ -152,7 +152,7 @@ class Reportor(object):
         return
 
 if __name__ == "__main__":
-    js_program = compile_js("js_code/gas.js")
+    js_program = compile_js("js_code/encrypt.js")
     # a = js_program.call("add", 1, 2)
     # print(a)
     username = "202021080612"

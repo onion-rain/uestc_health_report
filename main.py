@@ -89,35 +89,18 @@ class Reportor(object):
         self.sess = requests.Session()
 
     def login(self):
-        # headers = {
-        #     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
-        #     "Accept-Encoding": "gzip, deflate, br",
-        #     "Accept-Language": "en-CN,en;q=0.9,zh-CN;q=0.8,zh;q=0.7,en-US;q=0.6",
-        #     "Connection": "keep-alive",
-        #     "Cookie": "route=b33ccb7ad9a0242cd671775d1be49fa3; FSSBBIl1UgzbN7Nenable=true; org.springframework.web.servlet.i18n.CookieLocaleResolver.LOCALE=en; UM_distinctid=173e80bcaa72ad-0b0ee79ee1885-3323767-384000-173e80bcaa81f1; FSSBBIl1UgzbN7N443S=vSFUx8UO_NLszJc6KDO4MAUQObloytlM5z8Il2gLL85kPMYfFnk3sRzFBHkVTwcb; FSSBBIl1UgzbN7N80S=XxEiC7VGTc4OL5oLhjr4ffJZy51Kqm0g3z0V33TiRIbtr7x5wGUX2o6sE8vQUd.p; JSESSIONID=fb2x1BUvrkoRzR0qK8W3l8GrDXF1nRPH-uq4vPwfiO8IWv3PumkO!269640569; zg_did=%7B%22did%22%3A%20%221748211195f8c3-03dd903451f49a-333769-384000-1748211196043%22%7D; zg_=%7B%22sid%22%3A%201609301242389%2C%22updated%22%3A%201609301242394%2C%22info%22%3A%201608887637225%2C%22superProperty%22%3A%20%22%7B%7D%22%2C%22platform%22%3A%20%22%7B%7D%22%2C%22utm%22%3A%20%22%7B%7D%22%2C%22referrerDomain%22%3A%20%22%22%2C%22cuid%22%3A%20%22202021080612%22%2C%22zs%22%3A%200%2C%22sc%22%3A%200%2C%22firstScreen%22%3A%201609301242389%7D; FSSBBIl1UgzbN7N443T=4qZXM27TaE3ar3aYGYKTmMzkEa8YPWH0IANkYA9MY41N39mu.jLhcK5COOo_wOG8cgAilGK6.NM3FfwJ67yc0NrO_jwO9qnfa7fATCVYLAtTZXF_apjFweQTsfQLul9E_KDVMRE0GTgyhepCxYwGeWu8b0IhYDSR.tFW8rRNWCCC4PtLM.VCwzPkqX295or6TIOphm5BghVjzBy18fwvyc9RnZX0SVdXVlivVg_XwQQQ1g8xB2Yo8VUoRLF1K.z.Y0OVS9T.61MgytM6JDUxLSM2_DWl.OC6myIPTZun9qnPM8flbzyptSx5zQ1211VVQm.rk9JSVNEC54MTMWipWTcOMxM8SzR4kPtiS_DGQGrO9wa; FSSBBIl1UgzbN7N80T=4XSeGto1VfcRurg5.9R6J6hlc_9DlKGoxh_Y7EK6jyM69v46SgXo5Vo8xxJbn_zMK2EItGG22jMK2RlQQyUYRmIB2UqecnZjytP9NG.e5WlCyN2undoI5.14qy6FXX_WLCDzqKHhcN9C4gQ1_skAhdVfFsK9ayMXfhJZZPcCH3cvuHr_SUKoYtKxh4Q2C2.u1mx_dfz7zFaJ_IVezZW.t02gy3zbtWqRRRHbdDtXwpVLTngGR1Dol.wtEPv0oh2G4QBzQfiVQjT.8iYVFgfuGMzJgVHp6asOPmNXr5G.3SyKOfq",
-        #     "Host": "idas.uestc.edu.cn",
-        #     "Referer": "http://eportal.uestc.edu.cn/",
-        #     "sec-ch-ua": '"Google Chrome";v="87", " Not;A Brand";v="99", "Chromium";v="87"',
-        #     "sec-ch-ua-mobile": "?0",
-        #     "Sec-Fetch-Dest": "document",
-        #     "Sec-Fetch-Mode": "navigate",
-        #     "Sec-Fetch-Site": "cross-site",
-        #     "Sec-Fetch-User": "?1",
-        #     "Upgrade-Insecure-Requests": "1",
-        #     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36",
-        # }
+
         res = requests.get(self.login_url)
         # res = requests.get("https://www.baidu.com")
         res.encoding = 'utf-8'
-        # print(res.text)
+        # 密码加密
         pwdDefaultEncryptSalt = re.search(r'pwdDefaultEncryptSalt = "(?P<EncryptSalt>\w+)"', res.text)["EncryptSalt"]
-        a = js_program.call("_etd2", self.password, pwdDefaultEncryptSalt)
-        print(a)
+        EncryptedpassWord = js_program.call("_etd2", self.password, pwdDefaultEncryptSalt)
 
         # print("[debug] json.loads(r.text): ", json.loads(res.text))
         # data = {
         #     "userName": self.username,
-        #     "passWord": "+NT5YlvHSXvE+dXSA1f+D1WiBHDgFGFnIej7q9wVpJbse71XN5kJdzTECn8WVRbGD1vz+2vvAksfdtk6e61eWrPMqYYSep2bsQTLjZe9jQc=",
+        #     "passWord": EncryptedpassWord,
         #     "lt": "LT-1139506-PXYfWYjKB7pDEJTWYt0Adudlq3ZRge1609224254142-qPry-cas",
         #     "dllt": "userNamePasswordLogin",
         #     "execution": "e2s1",
@@ -132,8 +115,19 @@ class Reportor(object):
         #     "Upgrade-Insecure-Requests": "1",
         #     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36",
         # }
+
+        headers = {
+        #     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+        #     "Accept-Encoding": "gzip, deflate",
+        #     "Accept-Language": "en-CN,en;q=0.9,zh-CN;q=0.8,zh;q=0.7,en-US;q=0.6",
+        #     "Connection": "keep-alive",
+            "Cookie": "route=c15b6c7b18cc91511f70ceb25a6181ef; EMAP_LANG=zh; THEME=indigo; _WEU=rz9GnA*xZpsAzc7ih8CqUah56Flr_II5zO*uDBeQEZog852gIzAGEmqgtdMJvsjOh_,qI1xLUEpRdCoetCv1SgbGMPRpLIo6jNuWiJNIIymhLYurw0tfb2CKnFdrVoB8jZIRJ4_HoobEizvQrEEx1ho..; UM_distinctid=173e80bcaa72ad-0b0ee79ee1885-3323767-384000-173e80bcaa81f1; route=30dfce7b7500cd543e989b26cda7c8b4; amp.locale=undefined; iPlanetDirectoryPro=N27wu2ftImmZG6MBWa2MCl; JSESSIONID=HyOyNnrZjXBs0GnthAUmrcff4mSPxRiJDscLPaKssX8QogHSALB6!1919497788; MOD_AUTH_CAS=MOD_AUTH_ST-819820-AMu9rLmrFwIAAZYGnX951609307735246-xnsO-cas; zg_did=%7B%22did%22%3A%20%221748211195f8c3-03dd903451f49a-333769-384000-1748211196043%22%7D; zg_=%7B%22sid%22%3A%201609307685865%2C%22updated%22%3A%201609307761080%2C%22info%22%3A%201608887637225%2C%22superProperty%22%3A%20%22%7B%7D%22%2C%22platform%22%3A%20%22%7B%7D%22%2C%22utm%22%3A%20%22%7B%7D%22%2C%22referrerDomain%22%3A%20%22%22%2C%22cuid%22%3A%20%22202021080612%22%2C%22zs%22%3A%200%2C%22sc%22%3A%200%2C%22firstScreen%22%3A%201609307685865%7D",
+            # "Host": "eportal.uestc.edu.cn",
+            # "Upgrade-Insecure-Requests": "1",
+            # "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36",
+        }
         # try:
-        #     res = self.sess.post(self.login_url, data=data, headers=headers)
+        res = self.sess.get(self.daily_report_url, headers=headers)
         #     # res = self.sess.get()
         #     res.raise_for_status()
         # except Exception as err:
@@ -141,8 +135,40 @@ class Reportor(object):
         #     raise
         # else:
         #     print(res)
-        #     print("[debug] json.loads(r.text): ", json.loads(res.text))
-
+        #     # print("[debug] json.loads(r.text): ", json.loads(res.text))
+        data = {
+            "WID": "",
+            "CZZ": "",
+            "CZZXM": "",
+            "CZRQ": "",
+            "USER_ID": "202021080612",
+            "USER_NAME": "杨中宇",
+            "DEPT_CODE": "1008",
+            "DEPT_NAME": "计算机科学与工程学院（网络空间安全学院）",
+            "NEED_DATE": "2020-12-30",
+            "DAY_TIME_DISPLAY": "中午",
+            "DAY_TIME": "2",
+            "TEMPERATURE": "36",
+            "CREATED_AT": "2020-12-30 16:26",
+        }
+        headers = {
+            # "Accept": "application/json, text/javascript, */*; q=0.01",
+            # "Accept-Encoding": "gzip, deflate",
+            # "Accept-Language": "en-CN,en;q=0.9,zh-CN;q=0.8,zh;q=0.7,en-US;q=0.6",
+            # "Connection": "keep-alive",
+            # "Content-Length": "45",
+            # "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+            "Cookie": "route=c15b6c7b18cc91511f70ceb25a6181ef; EMAP_LANG=zh; THEME=indigo; _WEU=rz9GnA*xZpsAzc7ih8CqUah56Flr_II5zO*uDBeQEZog852gIzAGEmqgtdMJvsjOh_qI1xLUEpRdCoetCv1SgbGMPRpLIo6jNuWiJNIIymhLYurw0tfb2CKnFdrVoB8jZIRJ4_HoobEizvQrEEx1ho..; UM_distinctid=173e80bcaa72ad-0b0ee79ee1885-3323767-384000-173e80bcaa81f1; route=30dfce7b7500cd543e989b26cda7c8b4; amp.locale=undefined; iPlanetDirectoryPro=N27wu2ftImmZG6MBWa2MCl; JSESSIONID=HyOyNnrZjXBs0GnthAUmrcff4mSPxRiJDscLPaKssX8QogHSALB6!1919497788; MOD_AUTH_CAS=MOD_AUTH_ST-819820-AMu9rLmrFwIAAZYGnX951609307735246-xnsO-cas; zg_did=%7B%22did%22%3A%20%221748211195f8c3-03dd903451f49a-333769-384000-1748211196043%22%7D; zg_=%7B%22sid%22%3A%201609307685865%2C%22updated%22%3A%201609307771250%2C%22info%22%3A%201608887637225%2C%22superProperty%22%3A%20%22%7B%7D%22%2C%22platform%22%3A%20%22%7B%7D%22%2C%22utm%22%3A%20%22%7B%7D%22%2C%22referrerDomain%22%3A%20%22%22%2C%22cuid%22%3A%20%22202021080612%22%2C%22zs%22%3A%200%2C%22sc%22%3A%200%2C%22firstScreen%22%3A%201609307685865%7D",
+            # "Host": "eportal.uestc.edu.cn",
+            # "Origin": "http://eportal.uestc.edu.cn",
+            # "Referer": "http://eportal.uestc.edu.cn/jkdkapp/sys/lwReportEpidemicStu/index.do?",
+            # "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36",
+            # "X-Requested-With": "XMLHttpRequest",
+        }
+        res = self.sess.post(self.temp_report_url, data=data, headers=headers)
+        print(res)
+        res.encoding = 'utf-8'
+        print(res.text)
         # print(json.loads(res.text))
 
     def daily_report(self):

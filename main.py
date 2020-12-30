@@ -62,7 +62,7 @@ daily_report_data = {
 }
 
 headers = {  # 根据个人信息自行修改
-    "Cookie": "route=c15b6c7b18cc91511f70ceb25a6181ef; EMAP_LANG=zh; THEME=indigo; _WEU=TDa9F21HbfEz8hWJ*IUBLas7ZWyF_n3OA*2Ta585zIacUIvZpPIRLn4XaTZSBra*udVAJv7nOGa3SmIGNTJCGht41KPnCb0Pm3EZQih3lZRYXS9qepde6yGi*oKhDju2rKhQ7MXAE3LD6v02l8HS2c..; UM_distinctid=173e80bcaa72ad-0b0ee79ee1885-3323767-384000-173e80bcaa81f1; route=30dfce7b7500cd543e989b26cda7c8b4; asessionid=f2660f94-427d-4cd0-8d0b-96c35a8aec5a; amp.locale=undefined; JSESSIONID=uTezQsfgahKXM5_DSqGlFVDfSAE9mni0IwQblyxh3llyFWlwAxsW!1919497788; zg_did=%7B%22did%22%3A%20%221748211195f8c3-03dd903451f49a-333769-384000-1748211196043%22%7D; zg_=%7B%22sid%22%3A%201609325268508%2C%22updated%22%3A%201609325688105%2C%22info%22%3A%201608887637225%2C%22superProperty%22%3A%20%22%7B%7D%22%2C%22platform%22%3A%20%22%7B%7D%22%2C%22utm%22%3A%20%22%7B%7D%22%2C%22referrerDomain%22%3A%20%22%22%2C%22cuid%22%3A%20%22202021080612%22%2C%22zs%22%3A%200%2C%22sc%22%3A%200%2C%22firstScreen%22%3A%201609325268508%7D; iPlanetDirectoryPro=2AFa2nGBzRR7KmJcmfnCra; MOD_AUTH_CAS=MOD_AUTH_ST-830668-zJ02OZcEYvCqkNIBKrXo1609326197008-xnsO-cas",
+    "Cookie": "c15b6c7b18cc91511f70ceb25a6181ef; EMAP_LANG=zh; THEME=indigo; _WEU=7p8xCGX4xzNvUUv8Ycxfw5jvmtxyxS*Uqmo8gw355T8MdA3P9y4DZQU16kkzrgmzA*ySr_uJsNstdxY83R3I1QcFAh8Jjv_r4aeOvBCN8xtNMIAHSjywL6wPSi5eiI5xqBPsXXcUXXicT6bU4nEC_S..; UM_distinctid=173e80bcaa72ad-0b0ee79ee1885-3323767-384000-173e80bcaa81f1; route=30dfce7b7500cd543e989b26cda7c8b4; amp.locale=undefined; JSESSIONID=uTezQsfgahKXM5_DSqGlFVDfSAE9mni0IwQblyxh3llyFWlwAxsW!1919497788; asessionid=dbb414d7-a441-4b56-b04f-062d53b1f36b; zg_did=%7B%22did%22%3A%20%221748211195f8c3-03dd903451f49a-333769-384000-1748211196043%22%7D; zg_=%7B%22sid%22%3A%201609334641875%2C%22updated%22%3A%201609335292909%2C%22info%22%3A%201608887637225%2C%22superProperty%22%3A%20%22%7B%7D%22%2C%22platform%22%3A%20%22%7B%7D%22%2C%22utm%22%3A%20%22%7B%7D%22%2C%22referrerDomain%22%3A%20%22%22%2C%22cuid%22%3A%20%22202021080612%22%2C%22zs%22%3A%200%2C%22sc%22%3A%200%2C%22firstScreen%22%3A%201609334641875%7D; iPlanetDirectoryPro=VCAFtdpnA7khPP2NkaMlSb; MOD_AUTH_CAS=MOD_AUTH_ST-837935-Iqbj0rrEjVW60h3999Ag1609335588321-xnsO-cas",
 }
 data = {
     "USER_ID": "202021080612",
@@ -98,6 +98,8 @@ class Reportor(object):
             return 1  # 打卡失败
 
     def temp_report(self, DAY_TIME):
+
+        NEED_DATE = datetime.now().strftime("%Y-%m-%d")
         DAY_TIME_DISPLAY = {
             "1": "早上",
             "2": "中午",
@@ -107,22 +109,39 @@ class Reportor(object):
             "TEMPERATURE": "36",
             "DAY_TIME": DAY_TIME,
             "DAY_TIME_DISPLAY": DAY_TIME_DISPLAY[DAY_TIME],
-            "NEED_DATE": datetime.now().strftime("%Y-%m-%d"),
+            "NEED_DATE": NEED_DATE,
             "WID": "",
             # "CREATED_AT":"2020-12-31+19:03",
         })
 
-        temp_report_url = "http://eportal.uestc.edu.cn/jkdkapp/sys/lwReportEpidemicStu/mobile/tempReport/T_REPORT_TEMPERATURE_YJS_SAVE.do?"
-        for key in data.keys():
-            temp_report_url += (key + "=" + data[key] + "&")
-        temp_report_url = temp_report_url[:-1]
+        # check
+        temp_report_check_url = "http://eportal.uestc.edu.cn/jkdkapp/sys/lwReportEpidemicStu/mobile/tempReport/getMyTempReportDatas.do?"
+        temp_report_check_url += ("USER_ID=" + data["USER_ID"] + "&")
+        temp_report_check_url += (NEED_DATE + "&")
+        temp_report_check_url += ("DAY_TIME=" + DAY_TIME)
         
-        res = self.sess.post(temp_report_url, headers=headers)
+        res = self.sess.post(temp_report_check_url, headers=headers)
+        res.encoding = 'utf-8'
+        # print(res.text)
+        if re.search('"NEED_DATE":"{}","DAY_TIME":"{}"'.format(NEED_DATE, DAY_TIME), res.text) is not None:
+            print("temp report {} sucessful".format(DAY_TIME))
+            return int(DAY_TIME)
+        elif re.search("<title>统一身份认证</title>", res.text):
+            print("Cookie失效")
+            exit(0)
+
+        # save
+        temp_report_save_url = "http://eportal.uestc.edu.cn/jkdkapp/sys/lwReportEpidemicStu/mobile/tempReport/T_REPORT_TEMPERATURE_YJS_SAVE.do?"
+        for key in data.keys():
+            temp_report_save_url += (key + "=" + data[key] + "&")
+        temp_report_save_url = temp_report_save_url[:-1]
+
+        res = self.sess.post(temp_report_save_url, headers=headers)
         res.encoding = 'utf-8'
         try:
             assert re.search(r'"T_REPORT_TEMPERATURE_YJS_SAVE":(?P<r_value>\d)', res.text)["r_value"] == '1'
             print("temp report {} sucessful".format(DAY_TIME))
-            return DAY_TIME
+            return int(DAY_TIME)
         except Exception:
             if re.search("<title>统一身份认证</title>", res.text):
                 print("Cookie失效")
@@ -147,7 +166,7 @@ if __name__ == "__main__":
                 continue
             # 体温上报
             for id in range(1, 4):
-                while(str(id) not in r_value_list):
+                while(id not in r_value_list):
                     r_value_list.append(reportor.temp_report(str(id)))
             # 四项打卡全部完成
             reported_date.append(date_str)

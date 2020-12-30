@@ -1,10 +1,12 @@
 import requests
 import json
 import re
+from datetime import datetime
+import time
 
 from js_code.exejs import compile_js
 
-
+ 
 daily_report_data = {
     "WID": "B63D65084785EE87E053D3A4C5DEA774",
     "NEED_CHECKIN_DATE": "2020-12-29",
@@ -59,23 +61,15 @@ daily_report_data = {
     "SAW_DOCTOR_DESC": "",
 }
 
-temp_report_data = {
-    "WID": "",
-    "CZZ": "",
-    "CZZXM": "",
-    "CZRQ": "",
+headers = {  # 根据个人信息自行修改
+    "Cookie": "route=c15b6c7b18cc91511f70ceb25a6181ef; EMAP_LANG=zh; THEME=indigo; _WEU=TDa9F21HbfEz8hWJ*IUBLas7ZWyF_n3OA*2Ta585zIacUIvZpPIRLn4XaTZSBra*udVAJv7nOGa3SmIGNTJCGht41KPnCb0Pm3EZQih3lZRYXS9qepde6yGi*oKhDju2rKhQ7MXAE3LD6v02l8HS2c..; UM_distinctid=173e80bcaa72ad-0b0ee79ee1885-3323767-384000-173e80bcaa81f1; route=30dfce7b7500cd543e989b26cda7c8b4; asessionid=f2660f94-427d-4cd0-8d0b-96c35a8aec5a; amp.locale=undefined; JSESSIONID=uTezQsfgahKXM5_DSqGlFVDfSAE9mni0IwQblyxh3llyFWlwAxsW!1919497788; zg_did=%7B%22did%22%3A%20%221748211195f8c3-03dd903451f49a-333769-384000-1748211196043%22%7D; zg_=%7B%22sid%22%3A%201609325268508%2C%22updated%22%3A%201609325688105%2C%22info%22%3A%201608887637225%2C%22superProperty%22%3A%20%22%7B%7D%22%2C%22platform%22%3A%20%22%7B%7D%22%2C%22utm%22%3A%20%22%7B%7D%22%2C%22referrerDomain%22%3A%20%22%22%2C%22cuid%22%3A%20%22202021080612%22%2C%22zs%22%3A%200%2C%22sc%22%3A%200%2C%22firstScreen%22%3A%201609325268508%7D; iPlanetDirectoryPro=2AFa2nGBzRR7KmJcmfnCra; MOD_AUTH_CAS=MOD_AUTH_ST-830668-zJ02OZcEYvCqkNIBKrXo1609326197008-xnsO-cas",
+}
+data = {
     "USER_ID": "202021080612",
     "USER_NAME": "杨中宇",
-    "DEPT_CODE": "1008",
     "DEPT_NAME": "计算机科学与工程学院（网络空间安全学院）",
-    "NEED_DATE": "2020-12-29",
-    "DAY_TIME_DISPLAY": "中午",
-    "DAY_TIME": "1",
-    "TEMPERATURE": "36",
-    "CREATED_AT": "2020-12-29 13:56",
+    "DEPT_CODE": "1008",
 }
-
-
 
 class Reportor(object):
 
@@ -89,100 +83,68 @@ class Reportor(object):
         self.sess = requests.Session()
 
     def login(self):
-
-        res = requests.get(self.login_url)
-        # res = requests.get("https://www.baidu.com")
-        res.encoding = 'utf-8'
-        # 密码加密
-        pwdDefaultEncryptSalt = re.search(r'pwdDefaultEncryptSalt = "(?P<EncryptSalt>\w+)"', res.text)["EncryptSalt"]
-        EncryptedpassWord = js_program.call("_etd2", self.password, pwdDefaultEncryptSalt)
-
-        # print("[debug] json.loads(r.text): ", json.loads(res.text))
-        # data = {
-        #     "userName": self.username,
-        #     "passWord": EncryptedpassWord,
-        #     "lt": "LT-1139506-PXYfWYjKB7pDEJTWYt0Adudlq3ZRge1609224254142-qPry-cas",
-        #     "dllt": "userNamePasswordLogin",
-        #     "execution": "e2s1",
-        #     "_eventId": "submit",
-        #     "rmShown": "1",
-        #     "sign": "49300c2949a111eb9925c70ba008df64",
-        # }
-        # headers = {
-        #     "Host": "idas.uestc.edu.cn",
-        #     "Origin": "https://idas.uestc.edu.cn",
-        #     "Referer": "https://idas.uestc.edu.cn/authserver/login?service=http%3A%2F%2Feportal.uestc.edu.cn%2Flogin%3Fservice%3Dhttp%3A%2F%2Feportal.uestc.edu.cn%2Fnew%2Findex.html",
-        #     "Upgrade-Insecure-Requests": "1",
-        #     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36",
-        # }
-
-        headers = {
-        #     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
-        #     "Accept-Encoding": "gzip, deflate",
-        #     "Accept-Language": "en-CN,en;q=0.9,zh-CN;q=0.8,zh;q=0.7,en-US;q=0.6",
-        #     "Connection": "keep-alive",
-            "Cookie": "route=c15b6c7b18cc91511f70ceb25a6181ef; EMAP_LANG=zh; THEME=indigo; _WEU=rz9GnA*xZpsAzc7ih8CqUah56Flr_II5zO*uDBeQEZog852gIzAGEmqgtdMJvsjOh_,qI1xLUEpRdCoetCv1SgbGMPRpLIo6jNuWiJNIIymhLYurw0tfb2CKnFdrVoB8jZIRJ4_HoobEizvQrEEx1ho..; UM_distinctid=173e80bcaa72ad-0b0ee79ee1885-3323767-384000-173e80bcaa81f1; route=30dfce7b7500cd543e989b26cda7c8b4; amp.locale=undefined; iPlanetDirectoryPro=N27wu2ftImmZG6MBWa2MCl; JSESSIONID=HyOyNnrZjXBs0GnthAUmrcff4mSPxRiJDscLPaKssX8QogHSALB6!1919497788; MOD_AUTH_CAS=MOD_AUTH_ST-819820-AMu9rLmrFwIAAZYGnX951609307735246-xnsO-cas; zg_did=%7B%22did%22%3A%20%221748211195f8c3-03dd903451f49a-333769-384000-1748211196043%22%7D; zg_=%7B%22sid%22%3A%201609307685865%2C%22updated%22%3A%201609307761080%2C%22info%22%3A%201608887637225%2C%22superProperty%22%3A%20%22%7B%7D%22%2C%22platform%22%3A%20%22%7B%7D%22%2C%22utm%22%3A%20%22%7B%7D%22%2C%22referrerDomain%22%3A%20%22%22%2C%22cuid%22%3A%20%22202021080612%22%2C%22zs%22%3A%200%2C%22sc%22%3A%200%2C%22firstScreen%22%3A%201609307685865%7D",
-            # "Host": "eportal.uestc.edu.cn",
-            # "Upgrade-Insecure-Requests": "1",
-            # "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36",
-        }
-        # try:
-        res = self.sess.get(self.daily_report_url, headers=headers)
-        #     # res = self.sess.get()
-        #     res.raise_for_status()
-        # except Exception as err:
-        #     print("[error] ({}): {}".format(res.status_code, res.text))
-        #     raise
-        # else:
-        #     print(res)
-        #     # print("[debug] json.loads(r.text): ", json.loads(res.text))
-        data = {
-            "WID": "",
-            "CZZ": "",
-            "CZZXM": "",
-            "CZRQ": "",
-            "USER_ID": "202021080612",
-            "USER_NAME": "杨中宇",
-            "DEPT_CODE": "1008",
-            "DEPT_NAME": "计算机科学与工程学院（网络空间安全学院）",
-            "NEED_DATE": "2020-12-30",
-            "DAY_TIME_DISPLAY": "中午",
-            "DAY_TIME": "2",
-            "TEMPERATURE": "36",
-            "CREATED_AT": "2020-12-30 16:26",
-        }
-        headers = {
-            # "Accept": "application/json, text/javascript, */*; q=0.01",
-            # "Accept-Encoding": "gzip, deflate",
-            # "Accept-Language": "en-CN,en;q=0.9,zh-CN;q=0.8,zh;q=0.7,en-US;q=0.6",
-            # "Connection": "keep-alive",
-            # "Content-Length": "45",
-            # "Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
-            "Cookie": "route=c15b6c7b18cc91511f70ceb25a6181ef; EMAP_LANG=zh; THEME=indigo; _WEU=rz9GnA*xZpsAzc7ih8CqUah56Flr_II5zO*uDBeQEZog852gIzAGEmqgtdMJvsjOh_qI1xLUEpRdCoetCv1SgbGMPRpLIo6jNuWiJNIIymhLYurw0tfb2CKnFdrVoB8jZIRJ4_HoobEizvQrEEx1ho..; UM_distinctid=173e80bcaa72ad-0b0ee79ee1885-3323767-384000-173e80bcaa81f1; route=30dfce7b7500cd543e989b26cda7c8b4; amp.locale=undefined; iPlanetDirectoryPro=N27wu2ftImmZG6MBWa2MCl; JSESSIONID=HyOyNnrZjXBs0GnthAUmrcff4mSPxRiJDscLPaKssX8QogHSALB6!1919497788; MOD_AUTH_CAS=MOD_AUTH_ST-819820-AMu9rLmrFwIAAZYGnX951609307735246-xnsO-cas; zg_did=%7B%22did%22%3A%20%221748211195f8c3-03dd903451f49a-333769-384000-1748211196043%22%7D; zg_=%7B%22sid%22%3A%201609307685865%2C%22updated%22%3A%201609307771250%2C%22info%22%3A%201608887637225%2C%22superProperty%22%3A%20%22%7B%7D%22%2C%22platform%22%3A%20%22%7B%7D%22%2C%22utm%22%3A%20%22%7B%7D%22%2C%22referrerDomain%22%3A%20%22%22%2C%22cuid%22%3A%20%22202021080612%22%2C%22zs%22%3A%200%2C%22sc%22%3A%200%2C%22firstScreen%22%3A%201609307685865%7D",
-            # "Host": "eportal.uestc.edu.cn",
-            # "Origin": "http://eportal.uestc.edu.cn",
-            # "Referer": "http://eportal.uestc.edu.cn/jkdkapp/sys/lwReportEpidemicStu/index.do?",
-            # "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36",
-            # "X-Requested-With": "XMLHttpRequest",
-        }
-        res = self.sess.post(self.temp_report_url, data=data, headers=headers)
-        print(res)
-        res.encoding = 'utf-8'
-        print(res.text)
-        # print(json.loads(res.text))
-
+        # res = requests.get(self.login_url)
+        # res.encoding = 'utf-8'
+        # # 密码加密
+        # pwdDefaultEncryptSalt = re.search(r'pwdDefaultEncryptSalt = "(?P<EncryptSalt>\w+)"', res.text)["EncryptSalt"]
+        # EncryptedpassWord = js_program.call("_etd2", self.password, pwdDefaultEncryptSalt)
+        return
+        
     def daily_report(self):
-        return
+        if False:
+            return 0  # 打卡成功
+        else:
+            return 1  # 打卡失败
 
-    def temp_report(self):
-        return
+    def temp_report(self, DAY_TIME):
+        DAY_TIME_DISPLAY = {
+            "1": "早上",
+            "2": "中午",
+            "3": "晚上",
+        }
+        data.update({
+            "TEMPERATURE": "36",
+            "DAY_TIME": DAY_TIME,
+            "DAY_TIME_DISPLAY": DAY_TIME_DISPLAY[DAY_TIME],
+            "NEED_DATE": datetime.now().strftime("%Y-%m-%d"),
+            "WID": "",
+            # "CREATED_AT":"2020-12-31+19:03",
+        })
+
+        temp_report_url = "http://eportal.uestc.edu.cn/jkdkapp/sys/lwReportEpidemicStu/mobile/tempReport/T_REPORT_TEMPERATURE_YJS_SAVE.do?"
+        for key in data.keys():
+            temp_report_url += (key + "=" + data[key] + "&")
+        temp_report_url = temp_report_url[:-1]
+        
+        res = self.sess.post(temp_report_url, headers=headers)
+        res.encoding = 'utf-8'
+        if re.search(r'"T_REPORT_TEMPERATURE_YJS_SAVE":(?P<r_value>\d)', res.text)["r_value"] == '1':
+            print("DAY_TIME {} sucessful".format(DAY_TIME))
+            return DAY_TIME
+        else:
+            return 0
 
 if __name__ == "__main__":
     js_program = compile_js("js_code/encrypt.js")
-    # a = js_program.call("add", 1, 2)
-    # print(a)
     username = "202021080612"
     password = "sdfasdfsdf"
     reportor = Reportor(username, password, js_program)
     reportor.login()
+    
+    reported_date = []
+    while True:
+        date_str = datetime.now().strftime("%Y-%m-%d")
+        if date_str not in reported_date:
+            r_value_list = []
+            # 平安打卡
+            while(reportor.daily_report()):
+                continue
+            # 体温上报
+            for id in range(1, 4):
+                while(str(id) not in r_value_list):
+                    r_value_list.append(reportor.temp_report(str(id)))
+            # 四项打卡全部完成
+            reported_date.append(date_str)
+            print("day {} report complete!".format(date_str))
+        time.sleep(36000)
     print()

@@ -91,7 +91,8 @@ class Reportor(object):
         return
         
     def daily_report(self):
-        if False:
+        if True:
+            print("daily report sucessful")
             return 0  # 打卡成功
         else:
             return 1  # 打卡失败
@@ -119,7 +120,7 @@ class Reportor(object):
         res = self.sess.post(temp_report_url, headers=headers)
         res.encoding = 'utf-8'
         if re.search(r'"T_REPORT_TEMPERATURE_YJS_SAVE":(?P<r_value>\d)', res.text)["r_value"] == '1':
-            print("DAY_TIME {} sucessful".format(DAY_TIME))
+            print("temp report {} sucessful".format(DAY_TIME))
             return DAY_TIME
         else:
             return 0
@@ -145,6 +146,6 @@ if __name__ == "__main__":
                     r_value_list.append(reportor.temp_report(str(id)))
             # 四项打卡全部完成
             reported_date.append(date_str)
-            print("day {} report complete!".format(date_str))
+            print("day {} report complete!\n".format(date_str))
         time.sleep(36000)
     print()

@@ -119,10 +119,15 @@ class Reportor(object):
         
         res = self.sess.post(temp_report_url, headers=headers)
         res.encoding = 'utf-8'
-        if re.search(r'"T_REPORT_TEMPERATURE_YJS_SAVE":(?P<r_value>\d)', res.text)["r_value"] == '1':
+        try:
+            assert re.search(r'"T_REPORT_TEMPERATURE_YJS_SAVE":(?P<r_value>\d)', res.text)["r_value"] == '1'
             print("temp report {} sucessful".format(DAY_TIME))
             return DAY_TIME
-        else:
+        except Exception:
+            if re.search("<title>统一身份认证</title>", res.text):
+                print("Cookie失效")
+                exit(0)
+            time.sleep(5)
             return 0
 
 if __name__ == "__main__":

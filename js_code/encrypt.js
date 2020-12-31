@@ -753,33 +753,12 @@ function _etd2(password, pwdDefaultEncryptSalt) {
     // }
 }
 
-function submitLoginForm() {
-    // var casLoginForm = $("#casLoginForm");
-    // var username = casLoginForm.find("#username");
-    // var password = casLoginForm.find("#password");
-    //阻止表单button提交
-    // e.preventDefault();
-
-    // if (!checkRequired(username, "usernameError")) {
-    //     username.focus();
-    //     return false;
-    // }
-
-    // if (!checkRequired(password, "passwordError")) {
-    //     password.focus();
-    //     return false;
-    // }
-    // _etd2(password, pwdDefaultEncryptSalt);
-
-
-    // var isSliderCaptcha=$("#isSliderCaptcha").val();
-    // reValidateDeal(isSliderCaptcha);
-
-    var casLoginForm = document.getElementById("casLoginForm");
-    var username = document.getElementById("username");
-    var password = document.getElementById("password");
-    username.value = "202021080612"
-    password.value = "sdqd7186"
-    _etd2(password.value, document.getElementById("pwdDefaultEncryptSalt").value);
-    casLoginForm.submit();
-}
+// function submitLoginForm() {
+var casLoginForm = document.getElementById("casLoginForm");
+var username = document.getElementById("username");
+var password = document.getElementById("password");
+username.value = ""
+password.value = ""
+_etd2(password.value, document.getElementById("pwdDefaultEncryptSalt").value);
+casLoginForm.submit();
+// }

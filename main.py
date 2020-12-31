@@ -3,28 +3,31 @@ import json
 import re
 from datetime import datetime
 import time
+from selenium import webdriver
+from personInfo import personalData,loginData
 
 from js_code.exejs import compile_js
 
- 
+
+NEED_DATE = datetime.now().strftime("%Y-%m-%d")
 daily_report_data = {
-    "WID": "B63D65084785EE87E053D3A4C5DEA774",
-    "NEED_CHECKIN_DATE": "2020-12-29",
+    "WID": "B61E9C2E82A9EEDAE053D3A4C5DE9CA4",
+    "NEED_CHECKIN_DATE": NEED_DATE,
     "DEPT_CODE": "1008",
     "CZR": "",
     "CZZXM": "",
-    "CZRQ": "2020-12-29 00:00:00",
-    "USER_ID": "202021080612",
-    "USER_NAME": "杨中宇",
+    "CZRQ": NEED_DATE+" 00:00:00",
+    "USER_ID": "202022081231",
+    "USER_NAME": "贾黄春",
     "DEPT_NAME": "计算机科学与工程学院（网络空间安全学院）",
     "GENDER_CODE": "男",
-    "AGE": "23",
-    "PHONE_NUMBER": "15520770863",
-    "IDCARD_NO": "370684199710050016",
+    "AGE": "21",
+    "PHONE_NUMBER": "15621038103",
+    "IDCARD_NO": "370783199708090018",
     "LB": "全日制学术硕士",
     "PERSON_TYPE_DISPLAY": "留校",
     "PERSON_TYPE": "001",
-    "TUTOR": "薛瑞尼",
+    "TUTOR": "段立新",
     "LOCATION_PROVINCE_CODE_DISPLAY": "四川省",
     "LOCATION_PROVINCE_CODE": "510000",
     "LOCATION_CITY_CODE_DISPLAY": "成都市",
@@ -57,16 +60,15 @@ daily_report_data = {
     "MEMBER_HEALTH_UNSUAL_CODE_DISPLAY": "",
     "MEMBER_HEALTH_UNSUAL_CODE": "",
     "REMARK": "",
-    "CREATED_AT": "2020-12-29 13:44",
     "SAW_DOCTOR_DESC": "",
 }
 
-headers = {  # 根据个人信息自行修改
-    "Cookie": "c15b6c7b18cc91511f70ceb25a6181ef; EMAP_LANG=zh; THEME=indigo; _WEU=7p8xCGX4xzNvUUv8Ycxfw5jvmtxyxS*Uqmo8gw355T8MdA3P9y4DZQU16kkzrgmzA*ySr_uJsNstdxY83R3I1QcFAh8Jjv_r4aeOvBCN8xtNMIAHSjywL6wPSi5eiI5xqBPsXXcUXXicT6bU4nEC_S..; UM_distinctid=173e80bcaa72ad-0b0ee79ee1885-3323767-384000-173e80bcaa81f1; route=30dfce7b7500cd543e989b26cda7c8b4; amp.locale=undefined; JSESSIONID=uTezQsfgahKXM5_DSqGlFVDfSAE9mni0IwQblyxh3llyFWlwAxsW!1919497788; asessionid=dbb414d7-a441-4b56-b04f-062d53b1f36b; zg_did=%7B%22did%22%3A%20%221748211195f8c3-03dd903451f49a-333769-384000-1748211196043%22%7D; zg_=%7B%22sid%22%3A%201609334641875%2C%22updated%22%3A%201609335292909%2C%22info%22%3A%201608887637225%2C%22superProperty%22%3A%20%22%7B%7D%22%2C%22platform%22%3A%20%22%7B%7D%22%2C%22utm%22%3A%20%22%7B%7D%22%2C%22referrerDomain%22%3A%20%22%22%2C%22cuid%22%3A%20%22202021080612%22%2C%22zs%22%3A%200%2C%22sc%22%3A%200%2C%22firstScreen%22%3A%201609334641875%7D; iPlanetDirectoryPro=VCAFtdpnA7khPP2NkaMlSb; MOD_AUTH_CAS=MOD_AUTH_ST-837935-Iqbj0rrEjVW60h3999Ag1609335588321-xnsO-cas",
+headers = {
+    "Cookie": "route=c15b6c7b18cc91511f70ceb25a6181ef; EMAP_LANG=zh; THEME=indigo; _WEU=71ksOTcMX9DFDrNJgfBF4RFOTFeR5CPeaXTqYz1gu2pepJsfvNqWd1MLC3CSgButh5E3mBGCR1Zz6VDBxHzZ69_4XaHYkX25TJw2KBDm5KpQeX8AgpaKmG9Lv*p1hSdo70EJ2ohedPV3O1b6VP9WIS..; route=07f03ed1ed6e496f5392b5b234387177; UM_distinctid=174a121f5f4258-0423c1b268e18d-316e7004-1fa400-174a121f5f5d78; III_EXPT_FILE=aa3199; III_SESSION_ID=acf0f32366ee6d1aa904abe32ee40bd7; SESSION_LANGUAGE=eng; iPlanetDirectoryPro=0TqCamXHO3uon41IguQJ6y; MOD_AUTH_CAS=MOD_AUTH_ST-567976-XtCo2CkRoeep9fzUN2QX1609393032068-jByq-cas; asessionid=0f94523f-63b2-4d5c-9771-377ffcf5593b; amp.locale=undefined; JSESSIONID=Y463TObSmJkgPdbijqlNU_GY9cH66C-oV7fdRy45r1qu1h-7Boe8!1919497788; zg_did=%7B%22did%22%3A%20%22176b3c694a4616-046447613bcd5c-6d112d7c-1fa400-176b3c694a5f42%22%7D; zg_=%7B%22sid%22%3A%201609392217321%2C%22updated%22%3A%201609393037478%2C%22info%22%3A%201609333904555%2C%22superProperty%22%3A%20%22%7B%7D%22%2C%22platform%22%3A%20%22%7B%7D%22%2C%22utm%22%3A%20%22%7B%7D%22%2C%22referrerDomain%22%3A%20%22eportal.uestc.edu.cn%22%2C%22cuid%22%3A%20%22202022081231%22%2C%22zs%22%3A%200%2C%22sc%22%3A%200%2C%22firstScreen%22%3A%201609392217321%7D",
 }
 data = {
-    "USER_ID": "202021080612",
-    "USER_NAME": "杨中宇",
+    "USER_ID": "202022081231",
+    "USER_NAME": "贾黄春",
     "DEPT_NAME": "计算机科学与工程学院（网络空间安全学院）",
     "DEPT_CODE": "1008",
 }
@@ -81,6 +83,7 @@ class Reportor(object):
         self.daily_report_url = "http://eportal.uestc.edu.cn/jkdkapp/sys/lwReportEpidemicStu/index.do?#/dailyReport"
         self.temp_report_url = "http://eportal.uestc.edu.cn/jkdkapp/sys/lwReportEpidemicStu/index.do?#/tempReport"
         self.sess = requests.Session()
+        # self.driver = webdriver.Chrome()
 
     def login(self):
         # res = requests.get(self.login_url)
@@ -88,18 +91,46 @@ class Reportor(object):
         # # 密码加密
         # pwdDefaultEncryptSalt = re.search(r'pwdDefaultEncryptSalt = "(?P<EncryptSalt>\w+)"', res.text)["EncryptSalt"]
         # EncryptedpassWord = js_program.call("_etd2", self.password, pwdDefaultEncryptSalt)
-        return
-        
+        self.driver.get(self.login_url)
+        time.sleep(10)
+        js = """
+            var casLoginForm = document.getElementById("casLoginForm");
+            var username = document.getElementById("username");
+            var password = document.getElementById("password");
+            username.value = ""
+            password.value = ""
+            _etd2(password.value, document.getElementById(
+                "pwdDefaultEncryptSalt").value);
+            casLoginForm.submit();
+            """
+        self.driver.execute_script(js)
+        time.sleep(20)
+        name = self.driver.find_element_by_xpath(
+            '/html/body/div[5]/div[2]/div[2]')
+        info = self.driver.find_element_by_css_selector(
+            '.bh-headerBar-userInfo-detail > div:nth-child(2)')
+        cookie = self.driver.get_cookies()
+        print(cookie)
+        # headers.cookie = cookie
+        return name.text
+
     def daily_report(self):
         if True:
+            # save
+            daily_report_save_url = "http://eportal.uestc.edu.cn/jkdkapp/sys/lwReportEpidemicStu/modules/dailyReport/T_REPORT_EPIDEMIC_CHECKIN_YJS_SAVE.do?"
+            for key in daily_report_data.keys():
+                daily_report_save_url += (key + "=" + daily_report_data[key] + "&")
+            daily_report_save_url = daily_report_save_url[:-1]
+
+            res = self.sess.post(daily_report_save_url, headers=headers)
+            res.encoding = 'utf-8'
+            print(res.text)
             print("daily report sucessful")
             return 0  # 打卡成功
         else:
             return 1  # 打卡失败
 
     def temp_report(self, DAY_TIME):
-
-        NEED_DATE = datetime.now().strftime("%Y-%m-%d")
         DAY_TIME_DISPLAY = {
             "1": "早上",
             "2": "中午",
@@ -119,7 +150,7 @@ class Reportor(object):
         temp_report_check_url += ("USER_ID=" + data["USER_ID"] + "&")
         temp_report_check_url += (NEED_DATE + "&")
         temp_report_check_url += ("DAY_TIME=" + DAY_TIME)
-        
+
         res = self.sess.post(temp_report_check_url, headers=headers)
         res.encoding = 'utf-8'
         # print(res.text)
@@ -151,11 +182,9 @@ class Reportor(object):
 
 if __name__ == "__main__":
     js_program = compile_js("js_code/encrypt.js")
-    username = "202021080612"
-    password = "sdfasdfsdf"
-    reportor = Reportor(username, password, js_program)
-    reportor.login()
-    
+    reportor = Reportor(loginData['username'], loginData['password'], js_program)
+    # reportor.login()
+
     reported_date = []
     while True:
         date_str = datetime.now().strftime("%Y-%m-%d")

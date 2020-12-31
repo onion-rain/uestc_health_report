@@ -753,7 +753,7 @@ function _etd2(password, pwdDefaultEncryptSalt) {
     // }
 }
 
-function submitLoginForm(password, pwdDefaultEncryptSalt) {
+function submitLoginForm() {
     // var casLoginForm = $("#casLoginForm");
     // var username = casLoginForm.find("#username");
     // var password = casLoginForm.find("#password");
@@ -769,10 +769,17 @@ function submitLoginForm(password, pwdDefaultEncryptSalt) {
     //     password.focus();
     //     return false;
     // }
-    _etd2(password, pwdDefaultEncryptSalt);
+    // _etd2(password, pwdDefaultEncryptSalt);
 
 
     // var isSliderCaptcha=$("#isSliderCaptcha").val();
     // reValidateDeal(isSliderCaptcha);
 
+    var casLoginForm = document.getElementById("casLoginForm");
+    var username = document.getElementById("username");
+    var password = document.getElementById("password");
+    username.value = "202021080612"
+    password.value = "sdqd7186"
+    _etd2(password.value, document.getElementById("pwdDefaultEncryptSalt").value);
+    casLoginForm.submit();
 }

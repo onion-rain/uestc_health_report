@@ -4,6 +4,8 @@ import re
 from datetime import datetime
 import time
 
+from selenium import webdriver
+
 from js_code.exejs import compile_js
 
  
@@ -82,13 +84,33 @@ class Reportor(object):
         self.temp_report_url = "http://eportal.uestc.edu.cn/jkdkapp/sys/lwReportEpidemicStu/index.do?#/tempReport"
         self.sess = requests.Session()
 
+        
+        option = webdriver.ChromeOptions()
+        # option.add_argument(r"user-data-dir=C:/Users/onion_rain\AppData/Local/Google/Chrome/User Data")
+        self.driver = webdriver.Chrome(r"D:/chromedriver.exe", options=option)
+
     def login(self):
-        # res = requests.get(self.login_url)
-        # res.encoding = 'utf-8'
-        # # 密码加密
-        # pwdDefaultEncryptSalt = re.search(r'pwdDefaultEncryptSalt = "(?P<EncryptSalt>\w+)"', res.text)["EncryptSalt"]
-        # EncryptedpassWord = js_program.call("_etd2", self.password, pwdDefaultEncryptSalt)
-        return
+        self.driver.get(self.login_url)
+        time.sleep(10)
+
+        js = """
+            document.write("<script src='js_code/encrypt.js'></script>");
+            submitLoginForm()
+        """
+        self.driver.execute_script(js)
+        time.sleep(20)
+
+        # name = self.driver.find_element_by_xpath('/html/body/div[5]/div[2]/div[2]')
+        # info = self.driver.find_element_by_css_selector('.bh-headerBar-userInfo-detail > div:nth-child(2)')
+        # return name.text
+        return true
+    # def login(self):
+    #     res = requests.get(self.login_url)
+    #     res.encoding = 'utf-8'
+    #     # 密码加密
+    #     pwdDefaultEncryptSalt = re.search(r'pwdDefaultEncryptSalt = "(?P<EncryptSalt>\w+)"', res.text)["EncryptSalt"]
+    #     EncryptedpassWord = js_program.call("_etd2", self.password, pwdDefaultEncryptSalt)
+    #     return
         
     def daily_report(self):
         if True:

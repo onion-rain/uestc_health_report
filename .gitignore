@@ -2,3 +2,4 @@
 .__pycache__/
 .js_code/__pycache__/
 *.pyc
+personal_info.py

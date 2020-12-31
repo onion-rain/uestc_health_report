@@ -12,7 +12,6 @@ from selenium import webdriver
 from js_code.exejs import compile_js, js_from_file
 
 
-
 headers = {
     "Cookie": "route=c15b6c7b18cc91511f70ceb25a6181ef; EMAP_LANG=zh; THEME=indigo; _WEU=71ksOTcMX9DFDrNJgfBF4RFOTFeR5CPeaXTqYz1gu2pepJsfvNqWd1MLC3CSgButh5E3mBGCR1Zz6VDBxHzZ69_4XaHYkX25TJw2KBDm5KpQeX8AgpaKmG9Lv*p1hSdo70EJ2ohedPV3O1b6VP9WIS..; route=07f03ed1ed6e496f5392b5b234387177; UM_distinctid=174a121f5f4258-0423c1b268e18d-316e7004-1fa400-174a121f5f5d78; III_EXPT_FILE=aa3199; III_SESSION_ID=acf0f32366ee6d1aa904abe32ee40bd7; SESSION_LANGUAGE=eng; iPlanetDirectoryPro=0TqCamXHO3uon41IguQJ6y; MOD_AUTH_CAS=MOD_AUTH_ST-567976-XtCo2CkRoeep9fzUN2QX1609393032068-jByq-cas; asessionid=0f94523f-63b2-4d5c-9771-377ffcf5593b; amp.locale=undefined; JSESSIONID=Y463TObSmJkgPdbijqlNU_GY9cH66C-oV7fdRy45r1qu1h-7Boe8!1919497788; zg_did=%7B%22did%22%3A%20%22176b3c694a4616-046447613bcd5c-6d112d7c-1fa400-176b3c694a5f42%22%7D; zg_=%7B%22sid%22%3A%201609392217321%2C%22updated%22%3A%201609393037478%2C%22info%22%3A%201609333904555%2C%22superProperty%22%3A%20%22%7B%7D%22%2C%22platform%22%3A%20%22%7B%7D%22%2C%22utm%22%3A%20%22%7B%7D%22%2C%22referrerDomain%22%3A%20%22eportal.uestc.edu.cn%22%2C%22cuid%22%3A%20%22202022081231%22%2C%22zs%22%3A%200%2C%22sc%22%3A%200%2C%22firstScreen%22%3A%201609392217321%7D",
 }
@@ -45,29 +44,35 @@ class Reportor(object):
         while True:
             print("Please login in !")
             time.sleep(3)
-            # if login in successfully, url  jump to www.taobao.com
+            # if login in successfully, url  jump to self.login_seccess_url
             while self.driver.current_url == self.login_seccess_url:
                 Cookies = self.driver.get_cookies()
                 self.driver.quit()
                 cookies_str = cookies2str(Cookies)
                 return cookies_str
 
+    # # TODO selenium打开网页用户进行登录以获取cookie
+    # def login(self):
+    #     cookies_str = self.getUESTCCookies()
+    #     headers["Cookie"] = cookies_str
+
+    # # TODO request输入密码登录
+    # def login(self):
+    #     res = requests.get(self.login_url)
+    #     res.encoding = 'utf-8'
+    #     # 密码加密
+    #     pwdDefaultEncryptSalt = re.search(r'pwdDefaultEncryptSalt = "(?P<EncryptSalt>\w+)"', res.text)["EncryptSalt"]
+    #     EncryptedpassWord = js_program.call("_etd2", self.password, pwdDefaultEncryptSalt)
+
     def login(self):
-        # cookies_str = self.getUESTCCookies()
-        # headers["Cookie"] = cookies_str
-
-        # res = requests.get(self.login_url)
-        # res.encoding = 'utf-8'
-        # # 密码加密
-        # pwdDefaultEncryptSalt = re.search(r'pwdDefaultEncryptSalt = "(?P<EncryptSalt>\w+)"', res.text)["EncryptSalt"]
-        # EncryptedpassWord = js_program.call("_etd2", self.password, pwdDefaultEncryptSalt)
-        # return
-
         self.driver.get(self.daily_report_url)
         time.sleep(3)
+
+        # TODO selenium输入密码登录
         # js = js_from_file("js_code/encrypt.js")
         # self.driver.execute_script(js)
         # time.sleep(10)
+
         try:
             username = self.driver.find_element_by_xpath('//*[@id="row0emapdatatable"]/td[3]/span').text
         except Exception:
@@ -88,7 +93,6 @@ class Reportor(object):
 
             res = self.sess.post(daily_report_save_url, headers=headers)
             res.encoding = 'utf-8'
-            # print(res.text)
             print("daily report sucessful")
             return 0  # 打卡成功
         else:

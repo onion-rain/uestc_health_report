@@ -1,19 +1,29 @@
-#  这里修改为你自己的信息
+#  这里修改为你自己的信息，注释下的都需要修改
 
 from datetime import datetime
 NEED_DATE = datetime.now().strftime("%Y-%m-%d")
-
+# 报平安信息
 daily_report_data = {
-    "USER_ID": "20202108xxxx",
+    # 学号
+    "USER_ID": "2020xxxx",
+    # 姓名
     "USER_NAME": "xxx",
+    # 学院
     "DEPT_NAME": "计算机科学与工程学院（网络空间安全学院）",
+    # 性别
     "GENDER_CODE": "男",
-    "AGE": "24",
-    "PHONE_NUMBER": "155xxxxxxxx",
-    "IDCARD_NO": "370684xxxxxxxxxxxx",
+    # 年龄
+    "AGE": "21",
+    # 电话
+    "PHONE_NUMBER": "XXXXXX",
+    # 身份证
+    "IDCARD_NO": "xxxxxx",
+    # 全日制学术硕士 || 电子信息
     "LB": "全日制学术硕士",
+    # 学院代码
     "DEPT_CODE": "1008",
-    "TUTOR": "xxx",
+    # 导师
+    "TUTOR": "xxxx",
     "WID": "B63D65084785EE87E053D3A4C5DEA774",
     "NEED_CHECKIN_DATE": NEED_DATE,
     "CZR": "",
@@ -27,6 +37,7 @@ daily_report_data = {
     "LOCATION_CITY_CODE": "510100",
     "LOCATION_COUNTY_CODE_DISPLAY": "郫都区",
     "LOCATION_COUNTY_CODE": "510117",
+    # 校区 
     "LOCATION_DETAIL": "电子科技大学清水河校区",
     "HEALTH_STATUS_CODE_DISPLAY": "正常",
     "HEALTH_STATUS_CODE": "001",
@@ -55,15 +66,17 @@ daily_report_data = {
     "REMARK": "",
     "SAW_DOCTOR_DESC": "",
 }
+# 体温信息
+temp_report_data = {}
+temp_report_data['USER_ID'] = daily_report_data['USER_ID']
+temp_report_data['USER_NAME'] = daily_report_data['USER_NAME']
+temp_report_data['DEPT_NAME'] = daily_report_data['DEPT_NAME']
+temp_report_data['DEPT_CODE'] = daily_report_data['DEPT_CODE']
 
-temp_report_data = {
-    "USER_ID": "20202108xxxx",
-    "USER_NAME": "xxx",
-    "DEPT_NAME": "计算机科学与工程学院（网络空间安全学院）",
-    "DEPT_CODE": "1008",
-}
 
 login_data = {
+    # 学号
     "username":'',
+    # 密码
     "password":'',
 }

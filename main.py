@@ -114,6 +114,7 @@ class Reportor(object):
         })
 
         # check
+        # 此处服务器仅返回最近几次打卡信息故仅能验证最近几次打卡是否重复，若你已经打到明年了。。。那是没法验证的
         temp_report_check_url = "http://eportal.uestc.edu.cn/jkdkapp/sys/lwReportEpidemicStu/mobile/tempReport/getMyTempReportDatas.do?"
         temp_report_check_url += ("USER_ID=" + temp_report_data["USER_ID"] + "&")
         temp_report_check_url += (NEED_DATE + "&")
@@ -151,6 +152,7 @@ class Reportor(object):
 def daily_check(reportor, date_str, daily_report_data, temp_report_data):
     r_value_list = []
     # 平安打卡
+    # TODO daily report有bug暂时注释掉
     # while(reportor.daily_report(date_str, daily_report_data)):
     #     continue
     # 体温上报

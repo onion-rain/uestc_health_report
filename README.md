@@ -19,7 +19,16 @@
 
 ## 运行
 
+### 每日打卡
+
 ```bash
 python main.py
 ```
 ![效果图](readme_imgs/2.png)
+
+### 一劳永逸
+
+```bash
+python once_for_all.py
+```
+![效果图](readme_imgs/5.jpg)

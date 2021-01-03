@@ -1,8 +1,5 @@
 #  这里修改为你自己的信息
 
-from datetime import datetime
-NEED_DATE = datetime.now().strftime("%Y-%m-%d")
-
 daily_report_data = {
     "USER_ID": "20202108xxxx",
     "USER_NAME": "xxx",
@@ -14,11 +11,9 @@ daily_report_data = {
     "LB": "全日制学术硕士",
     "DEPT_CODE": "1008",
     "TUTOR": "xxx",
-    "WID": "B63D65084785EE87E053D3A4C5DEA774",
-    "NEED_CHECKIN_DATE": NEED_DATE,
+    "WID": "",
     "CZR": "",
     "CZZXM": "",
-    "CZRQ": NEED_DATE+" 00:00:00",
     "PERSON_TYPE_DISPLAY": "留校",
     "PERSON_TYPE": "001",
     "LOCATION_PROVINCE_CODE_DISPLAY": "四川省",
@@ -61,6 +56,8 @@ temp_report_data = {
     "USER_NAME": "xxx",
     "DEPT_NAME": "计算机科学与工程学院（网络空间安全学院）",
     "DEPT_CODE": "1008",
+    "TEMPERATURE": "36",
+    "WID": "",
 }
 
 login_data = {

@@ -83,36 +83,34 @@ class Reportor(object):
         self.driver.quit()
         headers["Cookie"] = cookies2str(Cookies)
 
-    def daily_report(self):
-        if True:
-            # save
-            daily_report_save_url = "http://eportal.uestc.edu.cn/jkdkapp/sys/lwReportEpidemicStu/modules/dailyReport/T_REPORT_EPIDEMIC_CHECKIN_YJS_SAVE.do?"
-            for key in daily_report_data.keys():
-                daily_report_save_url += (key + "=" + daily_report_data[key] + "&")
-            daily_report_save_url = daily_report_save_url[:-1]
+    def daily_report(self, NEED_DATE, daily_report_data):
+        # TODO 验证填报成功
+        daily_report_data.update({
+            "NEED_CHECKIN_DATE": NEED_DATE,
+            "CZRQ": NEED_DATE+" 00:00:00",
+        })
 
-            res = self.sess.post(daily_report_save_url, headers=headers)
-            res.encoding = 'utf-8'
-            print("daily report sucessful")
-            return 0  # 打卡成功
-        else:
-            time.sleep(5)
-            return 1  # 打卡失败
+        # save
+        daily_report_save_url = "http://eportal.uestc.edu.cn/jkdkapp/sys/lwReportEpidemicStu/modules/dailyReport/T_REPORT_EPIDEMIC_CHECKIN_YJS_SAVE.do?"
+        for key in daily_report_data.keys():
+            daily_report_save_url += (key + "=" + daily_report_data[key] + "&")
+        daily_report_save_url = daily_report_save_url[:-1]
 
-    def temp_report(self, DAY_TIME):
-        NEED_DATE = datetime.now().strftime("%Y-%m-%d")
+        res = self.sess.post(daily_report_save_url, headers=headers)
+        res.encoding = 'utf-8'
+        print("daily report sucessful")
+        return 0  # 打卡成功
+
+    def temp_report(self, NEED_DATE, DAY_TIME, temp_report_data):
         DAY_TIME_DISPLAY = {
             "1": "早上",
             "2": "中午",
             "3": "晚上",
         }
         temp_report_data.update({
-            "TEMPERATURE": "36",
             "DAY_TIME": DAY_TIME,
             "DAY_TIME_DISPLAY": DAY_TIME_DISPLAY[DAY_TIME],
             "NEED_DATE": NEED_DATE,
-            "WID": "",
-            # "CREATED_AT":"2020-12-31+19:03",
         })
 
         # check
@@ -123,7 +121,6 @@ class Reportor(object):
 
         res = self.sess.post(temp_report_check_url, headers=headers)
         res.encoding = 'utf-8'
-        # print(res.text)
         if re.search('"NEED_DATE":"{}","DAY_TIME":"{}"'.format(NEED_DATE, DAY_TIME), res.text) is not None:
             print("temp report {} has finished".format(DAY_TIME))
             return int(DAY_TIME)
@@ -150,26 +147,31 @@ class Reportor(object):
             time.sleep(5)
             return 0
 
+
+def daily_check(reportor, date_str, daily_report_data, temp_report_data):
+    r_value_list = []
+    # 平安打卡
+    # while(reportor.daily_report(date_str, daily_report_data)):
+    #     continue
+    # 体温上报
+    for id in range(1, 4):
+        while(id not in r_value_list):
+            r_value_list.append(reportor.temp_report(date_str, str(id), temp_report_data))
+    # 四项打卡全部完成
+    print("day {} report complete!\n".format(date_str))
+    return date_str
+
+
 if __name__ == "__main__":
     js_program = compile_js("js_code/encrypt.js")
     reportor = Reportor(login_data['username'], login_data['password'], js_program)
     reportor.login()
-
     reported_date = []
     while True:
         date_str = datetime.now().strftime("%Y-%m-%d")
-        print(str(datetime.now()))
+        print("当前时间：" + str(datetime.now()))
         if date_str not in reported_date:
-            r_value_list = []
-            # 平安打卡
-            while(reportor.daily_report()):
-                continue
-            # 体温上报
-            for id in range(1, 4):
-                while(id not in r_value_list):
-                    r_value_list.append(reportor.temp_report(str(id)))
-            # 四项打卡全部完成
-            reported_date.append(date_str)
-            print("day {} report complete!\n".format(date_str))
+            reported_date.append(
+                daily_check(reportor, date_str, daily_report_data, temp_report_data)
+            )
         time.sleep(3600)
-    print()

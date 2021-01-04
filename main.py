@@ -6,7 +6,7 @@ import time
 import pickle
 
 from selenium import webdriver
-from personal_info import server_url, daily_report_data, temp_report_data, login_data
+from personal_info import server_url, webdriver_path, daily_report_data, temp_report_data, login_data
 
 from apscheduler.schedulers.blocking import BlockingScheduler
 
@@ -41,7 +41,7 @@ class Reportor(object):
         options = webdriver.firefox.options.Options()
         options.add_argument('--headless')  # 无窗口
         options.add_argument('--incognito')  # 无痕
-        self.driver = webdriver.Firefox(executable_path=r"D:/geckodriver.exe", options=options)
+        self.driver = webdriver.Firefox(executable_path=webdriver_path, options=options)
         self.login()
 
     def login(self):

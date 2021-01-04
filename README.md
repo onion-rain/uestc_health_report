@@ -8,6 +8,8 @@
 
 需要selenium模块来模拟浏览器操作，需要下载firefox浏览器的[geckodriver](https://github.com/mozilla/geckodriver/releases)。
 
+注：经测试chromedriver无法满足需求
+
 ## 配置
 
 配置python环境：`pip install -r requirements.txt`
@@ -20,12 +22,16 @@
 
 ### 每日打卡
 
+程序会首先将今天的打卡完成，之后会自动在每日零时登录并打卡
+
 ```bash
 python main.py
 ```
 ![效果图](readme_imgs/2.png)
 
 ### 一劳永逸
+
+注意：未来体温填报经测试成功，但未来打卡未测试
 
 ```bash
 python once_for_all.py
@@ -46,23 +52,7 @@ python once_for_all.py
   
 + 对于每日报平安的api，也是可以多次报平安，但页面上只显示最近的一次。故猜测后端有两种可能的实现方式，一是当天重复打卡的会覆盖掉上一次的，二是也是打卡无限次，但前端做了处理，只显示当天最近的一次打卡。
 
-- [x] 每日三次体温上报的逻辑，同前端处理一样，为了不重复打卡，先检测是否打卡过
-- [x] 每日报平安,直接调用报平安的api
-- [x] cookie失效检测，目前是用selenium来自动获取的cookie，如果觉得配置selenium比较麻烦，可以对代码做如下处理
-```python
-# 注释掉main.py下__init__函数下初始化selenium driver部分
-option = webdriver.ChromeOptions()
-option.add_argument(r"user-data-dir=C:/Users/onion_rain\AppData/Local/Google/Chrome/User Data")
-self.driver = webdriver.Chrome(r"D:/chromedriver.exe", options=option)
-#注释掉__main__下调用login函数部分
-reportor.login()
-```
-前往[uestc每日打卡界面](http://eportal.uestc.edu.cn/jkdkapp/sys/lwReportEpidemicStu/index.do),如果没有登录则先登录，登录进入后，打开浏览器开发者界面的network面板，复制如下的cookie到main.py里
-![复制cookie](readme_imgs/3.png)
-![复制cookie2](readme_imgs/4.png)
+- [x] 每日三次体温上报、每日报平安均支持已打卡检测，避免重复打卡
 
 ## 待实现
-经过测试cookie失效时间比较短，不可能挂着脚本几个月每天都自动打卡，如果失效了则需要重新登录获取cookie，此部分需要通过代码完成
-- [ ] 通过纯python的request库来进行登录
-    >登录时候密码进行了加密同时还有一堆加密的参数
 - [ ] 滑块验证码的破解

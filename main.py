@@ -221,6 +221,7 @@ def check_job(daily_report_data, temp_report_data):
 
 
 if __name__ == "__main__":
+    check_job(daily_report_data, temp_report_data)
     scheduler_report = BlockingScheduler()
     scheduler_report.add_job(check_job, 'cron', day='*', hour="0", minute="0", args=[
         daily_report_data, temp_report_data

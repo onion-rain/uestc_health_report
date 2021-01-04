@@ -1,5 +1,9 @@
 # 电子科技大学研究生健康状况自动填报
 
+## 免责说明
+
+注意！！！！！仅做学习使用，禁止用来瞒报打卡，违者后果自负
+
 ## selenium以及chromedriver
 
 需要selenium模块来模拟浏览器操作，需要下载chrome浏览器的[chromedriver接口](https://chromedriver.chromium.org/), 请在上面网站中根据浏览器版本，下载相应版本的chromedriver。

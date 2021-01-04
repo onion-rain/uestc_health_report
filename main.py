@@ -218,8 +218,8 @@ def daily_check(reportor, daily_report_data, temp_report_data, date_str=None):
 def check_job(daily_report_data, temp_report_data):
     reportor = Reportor(login_data['username'], login_data['password'])
     date_str = daily_check(reportor, daily_report_data, temp_report_data)
-    if server_url is not None:
-        requests.get(url=server_url+f'?text={date_str}打卡完成')
+    # if server_url is not None:
+    #     requests.get(url=server_url+f'?text={date_str}打卡完成')
 
 
 if __name__ == "__main__":
@@ -230,3 +230,5 @@ if __name__ == "__main__":
     ])
     print("job started")
     scheduler_report.start()
+    if server_url is not None:
+        requests.get(url=server_url+f'?text=我挂了')

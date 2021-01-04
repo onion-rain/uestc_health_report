@@ -18,7 +18,7 @@ headers = {
 
 
 def cookies2str(cookies):
-    cookie = [item["name"] + "=" + item["value"] for item in cookies ]
+    cookie = [item["name"] + "=" + item["value"] for item in cookies]
     cookiestr = ';'.join(item for item in cookie)
     return cookiestr
 
@@ -34,10 +34,10 @@ class Reportor(object):
         self.daily_report_url = "http://eportal.uestc.edu.cn/jkdkapp/sys/lwReportEpidemicStu/index.do?#/dailyReport"
         self.temp_report_url = "http://eportal.uestc.edu.cn/jkdkapp/sys/lwReportEpidemicStu/index.do?#/tempReport"
         self.sess = requests.Session()
-
-        option = webdriver.ChromeOptions()
-        option.add_argument(r"user-data-dir=C:/Users/onion_rain\AppData/Local/Google/Chrome/User Data")
-        self.driver = webdriver.Chrome(r"D:/chromedriver.exe", options=option)
+        
+        # option = webdriver.ChromeOptions()
+        # option.add_argument(r"user-data-dir= /Users/shell0108/Library/Application\Support/Google/Chrome/Default")
+        # self.driver = webdriver.Chrome(r"/usr/local/bin/chromedriver", options=option)
 
     def getUESTCCookies(self):
         self.driver.get(self.login_url)
@@ -65,23 +65,22 @@ class Reportor(object):
     #     EncryptedpassWord = js_program.call("_etd2", self.password, pwdDefaultEncryptSalt)
 
     def login(self):
-        self.driver.get(self.daily_report_url)
-        time.sleep(3)
+        # self.driver.get(self.daily_report_url)
+        # time.sleep(3)
 
         # TODO selenium输入密码登录
         # js = js_from_file("js_code/encrypt.js")
         # self.driver.execute_script(js)
         # time.sleep(10)
-
-        try:
-            username = self.driver.find_element_by_xpath('//*[@id="row0emapdatatable"]/td[3]/span').text
-        except Exception:
-            raise Exception("登录失败")
-        else:
-            print("登录账号 ： {}".format(username))
-        Cookies = self.driver.get_cookies()
-        self.driver.quit()
-        headers["Cookie"] = cookies2str(Cookies)
+        driver = webdriver.Firefox()
+        driver.get(self.login_url)
+        driver.find_element_by_xpath('//*[@id="username"]').send_keys(self.username)
+        driver.find_element_by_xpath('//*[@id="password"]').send_keys(self.password)
+        driver.find_element_by_xpath('//*[@id="casLoginForm"]/p[4]/button').click()
+        # Cookies = self.driver.get_cookies()
+        # self.driver.quit()
+        # headers["Cookie"] = cookies2str(Cookies)
+        
 
     def daily_report(self, NEED_DATE, daily_report_data):
         # TODO 验证填报成功
@@ -95,7 +94,6 @@ class Reportor(object):
         for key in daily_report_data.keys():
             daily_report_save_url += (key + "=" + daily_report_data[key] + "&")
         daily_report_save_url = daily_report_save_url[:-1]
-
         res = self.sess.post(daily_report_save_url, headers=headers)
         res.encoding = 'utf-8'
         print("daily report sucessful")

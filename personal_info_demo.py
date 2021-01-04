@@ -2,6 +2,8 @@
 
 server_url = None  # 推送服务器url
 
+webdriver_path = r"D:/geckodriver.exe"
+
 daily_report_data = {
     # 学号
     "USER_ID": "2020xxxx",

@@ -4,8 +4,11 @@ import re
 from datetime import datetime
 import time
 import pickle
+
 from selenium import webdriver
 from personal_info import daily_report_data, temp_report_data, login_data
+
+from apscheduler.schedulers.blocking import BlockingScheduler
 
 
 headers = {
@@ -42,6 +45,7 @@ class Reportor(object):
         self.login()
 
     def login(self):
+        print("logging in...\r", end="")
         self.driver.get(self.login_url)
         time.sleep(3)
         js = """
@@ -194,7 +198,10 @@ class Reportor(object):
             return 0
 
 
-def daily_check(reportor, date_str, daily_report_data, temp_report_data):
+def daily_check(reportor, daily_report_data, temp_report_data, date_str=None):
+    if date_str is None:
+        date_str = datetime.now().strftime("%Y-%m-%d")
+        print("当前时间：" + str(datetime.now()))
     # 平安打卡
     while(reportor.daily_report(date_str, daily_report_data)):
         continue
@@ -208,10 +215,15 @@ def daily_check(reportor, date_str, daily_report_data, temp_report_data):
     return date_str
 
 
-if __name__ == "__main__":
+def check_job(daily_report_data, temp_report_data):
     reportor = Reportor(login_data['username'], login_data['password'])
-    while True:
-        date_str = datetime.now().strftime("%Y-%m-%d")
-        print("当前时间：" + str(datetime.now()))
-        daily_check(reportor, date_str, daily_report_data, temp_report_data)
-        time.sleep(36000)
+    daily_check(reportor, daily_report_data, temp_report_data)
+
+
+if __name__ == "__main__":
+    scheduler_report = BlockingScheduler()
+    scheduler_report.add_job(check_job, 'cron', day='*', hour="0", minute="0", args=[
+        daily_report_data, temp_report_data
+    ])
+    print("job started")
+    scheduler_report.start()

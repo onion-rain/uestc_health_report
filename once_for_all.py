@@ -17,6 +17,6 @@ if __name__ == "__main__":
         print()
         if date_str not in reported_date:
             reported_date.append(
-                daily_check(reportor, date_str, daily_report_data, temp_report_data)
+                daily_check(reportor, daily_report_data, temp_report_data, date_str)
             )
         # time.sleep(1)

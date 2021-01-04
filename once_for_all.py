@@ -2,15 +2,13 @@ import datetime
 import time
 
 from main import daily_check, Reportor
-from js_code.exejs import compile_js, js_from_file
 from personal_info import daily_report_data, temp_report_data, login_data
 
-times = 365  # 你要打未来多少天的卡
+times = 2  # 你要打未来多少天的卡
 
 if __name__ == "__main__":
-    js_program = compile_js("js_code/encrypt.js")
-    reportor = Reportor(login_data['username'], login_data['password'], js_program)
-    reportor.login()
+    # 注意！！未来体温填报经测试成功，未来打卡未测试
+    reportor = Reportor(login_data['username'], login_data['password'])
     reported_date = []
     for days in range(times):
         date_str = (datetime.datetime.now()+datetime.timedelta(days=days)).strftime("%Y-%m-%d")

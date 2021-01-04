@@ -1,3 +1,5 @@
 .vscode/
 *.pyc
 personal_info.py
+*.log
+log.txt

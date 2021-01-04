@@ -62,6 +62,7 @@ class Reportor(object):
         time.sleep(10)
         try:
             self.driver.find_element_by_xpath("/html/body/header/header[1]/div/div/div[4]/div[1]/img").click()
+            time.sleep(2)
             username = self.driver.find_element_by_xpath('/html/body/div[5]/div[2]/div[1]').text
         except Exception:
             raise Exception("登录失败")

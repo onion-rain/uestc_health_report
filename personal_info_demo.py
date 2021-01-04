@@ -1,5 +1,7 @@
 #  这里修改为你自己的信息，注释下的都需要修改
 
+server_url = None  # 推送服务器url
+
 daily_report_data = {
     # 学号
     "USER_ID": "2020xxxx",

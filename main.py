@@ -6,7 +6,7 @@ import time
 import pickle
 
 from selenium import webdriver
-from personal_info import daily_report_data, temp_report_data, login_data
+from personal_info import server_url, daily_report_data, temp_report_data, login_data
 
 from apscheduler.schedulers.blocking import BlockingScheduler
 
@@ -217,7 +217,9 @@ def daily_check(reportor, daily_report_data, temp_report_data, date_str=None):
 
 def check_job(daily_report_data, temp_report_data):
     reportor = Reportor(login_data['username'], login_data['password'])
-    daily_check(reportor, daily_report_data, temp_report_data)
+    date_str = daily_check(reportor, daily_report_data, temp_report_data)
+    if server_url is not None:
+        requests.get(url=server_url+f'?text={date_str}打卡完成')
 
 
 if __name__ == "__main__":

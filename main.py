@@ -59,7 +59,7 @@ class Reportor(object):
                 casLoginForm.submit();
             """.format(self.username, self.password)
             self.driver.execute_script(js)
-            time.sleep(10)
+            # time.sleep(10)
         def _check():
             """return 1 为检测登陆成功"""
             try:
@@ -80,8 +80,9 @@ class Reportor(object):
             _login(i+1)
             if _check():
                 return
-                
-            
+        if server_url is not None:
+            requests.get(url=server_url+f'?text=登陆失败，上服务器看看我觉得我还有救')
+        raise Exception("登录失败")
 
     def update_cookies(self):
         Cookies = self.driver.get_cookies()
@@ -186,7 +187,7 @@ class Reportor(object):
         #     temp_report_save_url += (key + "=" + temp_report_data[key] + "&")
         # temp_report_save_url = temp_report_save_url[:-1]
 
-        res = self.sess.post(temp_report_save_url, data=temp_report_data, headers=headers)
+        res = self.sess.post(self.temp_report_save_url, data=temp_report_data, headers=headers)
         if res.status_code != 200:
             print("网络错误")
             return 1

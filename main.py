@@ -1,4 +1,4 @@
-import requests
+﻿import requests
 import json
 import re
 from datetime import datetime
@@ -47,27 +47,41 @@ class Reportor(object):
 
     def login(self):
         print("logging in...\r", end="")
-        self.driver.get(self.login_url)
-        time.sleep(3)
-        js = """
-            var casLoginForm = document.getElementById("casLoginForm");
-            var username = document.getElementById("username");
-            var password = document.getElementById("password");
-            username.value = "{}"
-            password.value = "{}"
-            _etd2(password.value, document.getElementById("pwdDefaultEncryptSalt").value);
-            casLoginForm.submit();
-        """.format(self.username, self.password)
-        self.driver.execute_script(js)
-        time.sleep(10)
-        try:
-            self.driver.find_element_by_xpath("/html/body/header/header[1]/div/div/div[4]/div[1]/img").click()
-            time.sleep(2)
-            username = self.driver.find_element_by_xpath('/html/body/div[5]/div[2]/div[1]').text
-        except Exception:
-            raise Exception("登录失败")
-        else:
-            print("登录账号 ： {}".format(username))
+        def _login(i):
+            print("第{}次尝试登录".format(i))
+            js = """
+                var casLoginForm = document.getElementById("casLoginForm");
+                var username = document.getElementById("username");
+                var password = document.getElementById("password");
+                username.value = "{}"
+                password.value = "{}"
+                _etd2(password.value, document.getElementById("pwdDefaultEncryptSalt").value);
+                casLoginForm.submit();
+            """.format(self.username, self.password)
+            self.driver.execute_script(js)
+            time.sleep(10)
+        def _check():
+            """return 1 为检测登陆成功"""
+            try:
+                self.driver.find_element_by_xpath("/html/body/header/header[1]/div/div/div[4]/div[1]/img").click()
+                time.sleep(2)
+                username = self.driver.find_element_by_xpath('/html/body/div[5]/div[2]/div[1]').text
+            except Exception:
+                time.sleep(10)
+                return 0
+            else:
+                print("登录账号 ： {}".format(username))
+                return 1
+        for i in range(10):  # 重复尝试登陆十次
+            self.driver.get(self.login_url)
+            time.sleep(3)
+            if _check():
+                return
+            _login(i+1)
+            if _check():
+                return
+                
+            
 
     def update_cookies(self):
         Cookies = self.driver.get_cookies()

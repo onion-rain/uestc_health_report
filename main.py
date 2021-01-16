@@ -42,8 +42,6 @@ class Reportor(object):
         options.add_argument('--headless')  # 无窗口
         options.add_argument('--incognito')  # 无痕
         self.driver = webdriver.Firefox(executable_path=webdriver_path, options=options)
-        self.login()
-        self.update_cookies()
 
     def login(self):
         print("logging in...\r", end="")
@@ -71,6 +69,7 @@ class Reportor(object):
                 return 0
             else:
                 print("登录账号 ： {}".format(username))
+                self.update_cookies()
                 return 1
         for i in range(10):  # 重复尝试登陆十次
             self.driver.get(self.login_url)
@@ -221,18 +220,19 @@ def daily_check(reportor, daily_report_data, temp_report_data, date_str=None):
     return date_str
 
 
-def check_job(daily_report_data, temp_report_data):
-    reportor = Reportor(login_data['username'], login_data['password'])
+def check_job(reportor, daily_report_data, temp_report_data):
+    reportor.login()
     date_str = daily_check(reportor, daily_report_data, temp_report_data)
     if server_url is not None:
         requests.get(url=server_url+f'?text={date_str}打卡完成')
 
 
 if __name__ == "__main__":
-    check_job(daily_report_data, temp_report_data)
+    reportor = Reportor(login_data['username'], login_data['password'])
+    check_job(reportor, daily_report_data, temp_report_data)
     scheduler_report = BlockingScheduler()
     scheduler_report.add_job(check_job, 'cron', day='*', hour="0", minute="0", args=[
-        daily_report_data, temp_report_data
+        reportor, daily_report_data, temp_report_data
     ])
     print("job started")
     scheduler_report.start()

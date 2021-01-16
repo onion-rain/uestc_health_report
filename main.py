@@ -12,7 +12,8 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 
 
 headers = {
-    "Cookie": "",
+    "Cookie": "", 
+    'Connection': 'close',
 }
 
 
@@ -35,16 +36,16 @@ class Reportor(object):
         self.temp_report_save_url = "http://eportal.uestc.edu.cn/jkdkapp/sys/lwReportEpidemicStu/mobile/tempReport/T_REPORT_TEMPERATURE_YJS_SAVE.do?"
         self.sess = requests.Session()
         
-        # options = webdriver.ChromeOptions()
-        # options.add_argument(r"user-data-dir= /Users/shell0108/Library/Application\Support/Google/Chrome/Default")
-        # self.driver = webdriver.Chrome(r"/usr/local/bin/chromedriver", options=options)
+    def login(self):
+        print("logging in...\r", end="")
         options = webdriver.firefox.options.Options()
         options.add_argument('--headless')  # 无窗口
         options.add_argument('--incognito')  # 无痕
-        self.driver = webdriver.Firefox(executable_path=webdriver_path, options=options)
-
-    def login(self):
-        print("logging in...\r", end="")
+        driver = webdriver.Firefox(executable_path=webdriver_path, options=options)
+        def update_cookies():
+            Cookies = driver.get_cookies()
+            driver.quit()
+            headers["Cookie"] = cookies2str(Cookies)
         def _login(i):
             print("第{}次尝试登录".format(i))
             js = """
@@ -56,23 +57,23 @@ class Reportor(object):
                 _etd2(password.value, document.getElementById("pwdDefaultEncryptSalt").value);
                 casLoginForm.submit();
             """.format(self.username, self.password)
-            self.driver.execute_script(js)
+            driver.execute_script(js)
             # time.sleep(10)
         def _check():
             """return 1 为检测登陆成功"""
             try:
-                self.driver.find_element_by_xpath("/html/body/header/header[1]/div/div/div[4]/div[1]/img").click()
+                driver.find_element_by_xpath("/html/body/header/header[1]/div/div/div[4]/div[1]/img").click()
                 time.sleep(2)
-                username = self.driver.find_element_by_xpath('/html/body/div[5]/div[2]/div[1]').text
+                username = driver.find_element_by_xpath('/html/body/div[5]/div[2]/div[1]').text
             except Exception:
                 time.sleep(10)
                 return 0
             else:
                 print("登录账号 ： {}".format(username))
-                self.update_cookies()
+                update_cookies()
                 return 1
         for i in range(10):  # 重复尝试登陆十次
-            self.driver.get(self.login_url)
+            driver.get(self.login_url)
             time.sleep(3)
             if _check():
                 return
@@ -82,11 +83,6 @@ class Reportor(object):
         if server_url is not None:
             requests.get(url=server_url+f'?text=登陆失败，上服务器看看我觉得我还有救')
         raise Exception("登录失败")
-
-    def update_cookies(self):
-        Cookies = self.driver.get_cookies()
-        self.driver.quit()
-        headers["Cookie"] = cookies2str(Cookies)
 
     def daily_report(self, NEED_DATE, daily_report_data):
         # 获取WID

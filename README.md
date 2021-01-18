@@ -14,9 +14,11 @@
 
 配置python环境：`pip install -r requirements.txt`
 
-在`self.driver = webdriver.Firefox(executable_path=r"D:/geckodriver.exe", options=options)`将地址更换为你的geckodriver所在位置。
+修改personal_info_demo.py中的webdriver_path的值为你的电脑上geckodriver所在位置。
 
-根据personal_info_demo.py添加自己的信息，并更名为personal_info.py
+根据personal_info_demo.py添加自己的信息
+
+personal_info_demo.py更名为personal_info.py
 
 ## 运行
 
@@ -27,7 +29,7 @@
 ```bash
 python main.py
 ```
-![效果图](readme_imgs/2.png)
+![效果图](readme_imgs/2.jpg)
 
 ### 一劳永逸
 

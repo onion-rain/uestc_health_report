@@ -4,7 +4,7 @@ server_url = None  # 推送服务器url
 
 webdriver_path = r"D:/geckodriver.exe"
 
-daily_report_data = {
+daily_report_data = [{
     # 学号
     "USER_ID": "2020xxxx",
     # 姓名
@@ -25,6 +25,8 @@ daily_report_data = {
     "DEPT_CODE": "1008",
     # 导师
     "TUTOR": "xxxx",
+    # 校区 
+    "LOCATION_DETAIL": "电子科技大学清水河校区",
     "WID": "",
     "CZR": "",
     "CZZXM": "",
@@ -36,8 +38,6 @@ daily_report_data = {
     "LOCATION_CITY_CODE": "510100",
     "LOCATION_COUNTY_CODE_DISPLAY": "郫都区",
     "LOCATION_COUNTY_CODE": "510117",
-    # 校区 
-    "LOCATION_DETAIL": "电子科技大学清水河校区",
     "HEALTH_STATUS_CODE_DISPLAY": "正常",
     "HEALTH_STATUS_CODE": "001",
     "HEALTH_UNSUAL_CODE": "",
@@ -64,17 +64,22 @@ daily_report_data = {
     "MEMBER_HEALTH_UNSUAL_CODE": "",
     "REMARK": "",
     "SAW_DOCTOR_DESC": "",
-}
+},
+# {
+#     # 若要添加打卡人在此添加
+# },
+]
 
 # 体温信息
-temp_report_data = {
-    "TEMPERATURE": "36",
-}
-temp_report_data['USER_ID'] = daily_report_data['USER_ID']
-temp_report_data['USER_NAME'] = daily_report_data['USER_NAME']
-temp_report_data['DEPT_NAME'] = daily_report_data['DEPT_NAME']
-temp_report_data['DEPT_CODE'] = daily_report_data['DEPT_CODE']
-temp_report_data['WID'] = daily_report_data['WID']
+temp_report_data = []
+for i in range(len(daily_report_data)):
+    temp_report_data.append({"TEMPERATURE": "36"})
+    temp_report_data[i]['TEMPERATURE'] = daily_report_data[i]['USER_ID']
+    temp_report_data[i]['USER_ID'] = daily_report_data[i]['USER_ID']
+    temp_report_data[i]['USER_NAME'] = daily_report_data[i]['USER_NAME']
+    temp_report_data[i]['DEPT_NAME'] = daily_report_data[i]['DEPT_NAME']
+    temp_report_data[i]['DEPT_CODE'] = daily_report_data[i]['DEPT_CODE']
+    temp_report_data[i]['WID'] = daily_report_data[i]['WID']
 
 login_data = {
     # 学号

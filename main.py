@@ -150,9 +150,6 @@ class Reportor(object):
             "NEED_DATE": NEED_DATE,
             "DAY_TIME": DAY_TIME,
         }
-        # temp_report_check_url += ("USER_ID=" + temp_report_data["USER_ID"] + "&")
-        # temp_report_check_url += (NEED_DATE + "&")
-        # temp_report_check_url += ("DAY_TIME=" + DAY_TIME)
 
         res = self.sess.post(temp_report_check_url, data=check_data, headers=headers)
         if res.status_code != 200:
@@ -177,10 +174,6 @@ class Reportor(object):
             "DAY_TIME_DISPLAY": DAY_TIME_DISPLAY[DAY_TIME],
             "NEED_DATE": NEED_DATE,
         })
-        # temp_report_save_url = self.temp_report_save_url
-        # for key in temp_report_data.keys():
-        #     temp_report_save_url += (key + "=" + temp_report_data[key] + "&")
-        # temp_report_save_url = temp_report_save_url[:-1]
 
         res = self.sess.post(self.temp_report_save_url, data=temp_report_data, headers=headers)
         if res.status_code != 200:
@@ -212,13 +205,14 @@ def daily_check(reportor, daily_report_data, temp_report_data, date_str=None):
         while(id not in r_value_list):
             r_value_list.append(reportor.temp_report(date_str, str(id), temp_report_data))
     # 四项打卡全部完成
-    print("day {} report complete!\n".format(date_str))
+    print("{} day {} report complete!\n".format(daily_report_data["USER_NAME"], date_str))
     return date_str
 
 
 def check_job(reportor, daily_report_data, temp_report_data):
     reportor.login()
-    date_str = daily_check(reportor, daily_report_data, temp_report_data)
+    for id in range(len(daily_report_data)):
+        date_str = daily_check(reportor, daily_report_data[id], temp_report_data[id])
     if server_url is not None:
         requests.get(url=server_url+f'?text={date_str}打卡完成')
 

@@ -74,7 +74,6 @@ daily_report_data = [{
 temp_report_data = []
 for i in range(len(daily_report_data)):
     temp_report_data.append({"TEMPERATURE": "36"})
-    temp_report_data[i]['TEMPERATURE'] = daily_report_data[i]['USER_ID']
     temp_report_data[i]['USER_ID'] = daily_report_data[i]['USER_ID']
     temp_report_data[i]['USER_NAME'] = daily_report_data[i]['USER_NAME']
     temp_report_data[i]['DEPT_NAME'] = daily_report_data[i]['DEPT_NAME']

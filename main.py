@@ -13,7 +13,7 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 
 headers = {
     "Cookie": "", 
-    'Connection': 'close',
+    # 'Connection': 'close',
 }
 
 
@@ -82,9 +82,9 @@ class Reportor(object):
                 return
         if server_url is not None:
             requests.get(url=server_url+f'?text=登陆失败，上服务器看看我觉得我还有救')
-        raise Exception("登录失败")
+        raise RuntimeError("登录失败")
 
-    def daily_report(self, NEED_DATE, daily_report_data):
+    def _daily_report(self, NEED_DATE, daily_report_data):
         # 获取WID
         wid_data = {
             'pageNumber': '1',
@@ -93,9 +93,16 @@ class Reportor(object):
         }
         res = requests.post(self.wid_url, data=wid_data, headers=headers)
         res.encoding = 'utf-8'
-        wid_json_loads = json.loads(res.text)
-        wid = wid_json_loads['datas']['getMyTodayReportWid']['rows'][0]['WID']
-        daily_report_data['WID'] = wid
+        if re.search("<title>统一身份认证</title>", res.text):
+            # print("Cookie失效")
+            raise RuntimeError("Cookie失效")
+        try:
+            wid_json_loads = json.loads(res.text)
+            wid = wid_json_loads['datas']['getMyTodayReportWid']['rows'][0]['WID']
+            daily_report_data['WID'] = wid
+        except json.decoder.JSONDecodeError:
+            print("json解析失败")
+            return 1
 
         # check
         daily_report_check_url = self.daily_report_check_url
@@ -111,11 +118,18 @@ class Reportor(object):
             print("网络错误")
             return 1
         res.encoding = 'utf-8'
-        parsed_res = json.loads(res.text)
+        if re.search("<title>统一身份认证</title>", res.text):
+            # print("Cookie失效")
+            raise RuntimeError("Cookie失效")
+        try:
+            parsed_res = json.loads(res.text)
+        except json.decoder.JSONDecodeError:
+            print("json解析失败")
+            return 1
         try:
             if parsed_res['datas']['getMyDailyReportDatas']['totalSize'] > 0:
                 print("daily report has finished")
-                return 0
+                return 0  # 打卡成功
         except KeyError:
             pass
 
@@ -125,15 +139,19 @@ class Reportor(object):
             "CZRQ": NEED_DATE+" 00:00:00",
         })
         daily_report_save_url = self.daily_report_save_url
-        # for key in daily_report_data.keys():
-        #     daily_report_save_url += (key + "=" + daily_report_data[key] + "&")
-        # daily_report_save_url = daily_report_save_url[:-1]
         res = self.sess.post(daily_report_save_url, data=daily_report_data, headers=headers)
         if res.status_code != 200:
             print("网络错误")
             return 1
         res.encoding = 'utf-8'
-        parsed_res = json.loads(res.text)
+        if re.search("<title>统一身份认证</title>", res.text):
+            # print("Cookie失效")
+            raise RuntimeError("Cookie失效")
+        try:
+            parsed_res = json.loads(res.text)
+        except json.decoder.JSONDecodeError:
+            print("json解析失败")
+            return 1
         if parsed_res['code'] == '0' and parsed_res['datas']['T_REPORT_EPIDEMIC_CHECKIN_YJS_SAVE'] == 1:
             print("daily report sucessful")
             return 0  # 打卡成功
@@ -141,9 +159,8 @@ class Reportor(object):
             print("打卡失败")
             return 1
 
-    def temp_report(self, NEED_DATE, DAY_TIME, temp_report_data):
+    def _temp_report(self, NEED_DATE, DAY_TIME, temp_report_data):
         # check
-        # 此处服务器仅返回最近几次打卡信息故仅能验证最近几次打卡是否重复，若你已经打到明年了。。。那是没法验证的
         temp_report_check_url = self.temp_report_check_url
         check_data = {
             "USER_ID": temp_report_data["USER_ID"],
@@ -160,8 +177,8 @@ class Reportor(object):
             print("temp report {} has finished".format(DAY_TIME))
             return int(DAY_TIME)
         elif re.search("<title>统一身份认证</title>", res.text):
-            print("Cookie失效")
-            exit(0)
+            # print("Cookie失效")
+            raise RuntimeError("Cookie失效")
 
         # save
         DAY_TIME_DISPLAY = {
@@ -183,14 +200,33 @@ class Reportor(object):
         try:
             assert re.search(r'"T_REPORT_TEMPERATURE_YJS_SAVE":(?P<r_value>\d)', res.text)["r_value"] == '1'
             print("temp report {} sucessful".format(DAY_TIME))
-            return int(DAY_TIME)
+            return int(DAY_TIME)  # 打卡成功
         except Exception:
             if re.search("<title>统一身份认证</title>", res.text):
-                print("Cookie失效")
-                exit(0)
+                # print("Cookie失效")
+                raise RuntimeError("Cookie失效")
             time.sleep(5)
             return 0
 
+    def daily_report(self, NEED_DATE, daily_report_data):
+        try:
+            return self._daily_report(NEED_DATE, daily_report_data)
+        except RuntimeError as e:
+            print(e)
+            if server_url is not None:
+                requests.get(url=server_url+f'?text={e}，上服务器看看我还有救吗')
+        except Exception:
+            return 1
+
+    def temp_report(self, NEED_DATE, DAY_TIME, temp_report_data):
+        try:
+            return self._temp_report(NEED_DATE, DAY_TIME, temp_report_data)
+        except RuntimeError as e:
+            print(e)
+            if server_url is not None:
+                requests.get(url=server_url+f'?text={e}，上服务器看看我还有救吗')
+        except Exception:
+            return 1
 
 def daily_check(reportor, daily_report_data, temp_report_data, date_str=None):
     if date_str is None:

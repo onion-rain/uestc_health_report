@@ -1,4 +1,5 @@
 ﻿import requests
+from my_request import get_request
 import json
 import re
 from datetime import datetime
@@ -12,13 +13,12 @@ from apscheduler.schedulers.blocking import BlockingScheduler
 
 
 headers = {
-    "Cookie": "", 
-    # 'Connection': 'close',
+    "Cookie": ""
 }
 
 
 def cookies2str(cookies):
-    cookie = [item["name"] + "=" + item["value"] for item in cookies]
+    cookie = [item["name"]+"="+item["value"] for item in cookies]
     cookiestr = ';'.join(item for item in cookie)
     return cookiestr
 
@@ -28,13 +28,13 @@ class Reportor(object):
     def __init__(self, username, password):
         self.username = username
         self.password = password
+        self.host = "eportal.uestc.edu.cn"
         self.login_url = "http://eportal.uestc.edu.cn/jkdkapp/sys/lwReportEpidemicStu/index.do?#/dailyReport"
-        self.wid_url = 'http://eportal.uestc.edu.cn/jkdkapp/sys/lwReportEpidemicStu/modules/dailyReport/getMyTodayReportWid.do'
-        self.daily_report_check_url = "http://eportal.uestc.edu.cn/jkdkapp/sys/lwReportEpidemicStu/modules/dailyReport/getMyDailyReportDatas.do?"
-        self.daily_report_save_url = "http://eportal.uestc.edu.cn/jkdkapp/sys/lwReportEpidemicStu/modules/dailyReport/T_REPORT_EPIDEMIC_CHECKIN_YJS_SAVE.do?"
-        self.temp_report_check_url = "http://eportal.uestc.edu.cn/jkdkapp/sys/lwReportEpidemicStu/mobile/tempReport/getMyTempReportDatas.do?"
-        self.temp_report_save_url = "http://eportal.uestc.edu.cn/jkdkapp/sys/lwReportEpidemicStu/mobile/tempReport/T_REPORT_TEMPERATURE_YJS_SAVE.do?"
-        self.sess = requests.Session()
+        self.wid_url = '/jkdkapp/sys/lwReportEpidemicStu/modules/dailyReport/getMyTodayReportWid.do?'
+        self.daily_report_check_url = "/jkdkapp/sys/lwReportEpidemicStu/modules/dailyReport/getMyDailyReportDatas.do?"
+        self.daily_report_save_url = "/jkdkapp/sys/lwReportEpidemicStu/modules/dailyReport/T_REPORT_EPIDEMIC_CHECKIN_YJS_SAVE.do?"
+        self.temp_report_check_url = "/jkdkapp/sys/lwReportEpidemicStu/mobile/tempReport/getMyTempReportDatas.do?"
+        self.temp_report_save_url = "/jkdkapp/sys/lwReportEpidemicStu/mobile/tempReport/T_REPORT_TEMPERATURE_YJS_SAVE.do?"
         
     def login(self):
         print("logging in...\r", end="")
@@ -91,13 +91,13 @@ class Reportor(object):
             'pageSize': '10',
             'USER_ID': daily_report_data["USER_ID"],
         }
-        res = requests.post(self.wid_url, data=wid_data, headers=headers)
-        res.encoding = 'utf-8'
-        if re.search("<title>统一身份认证</title>", res.text):
-            # print("Cookie失效")
+        res = get_request(self.host, "POST", self.wid_url, wid_data, headers)
+        if re.search("<title>统一身份认证</title>", res):
             raise RuntimeError("Cookie失效")
+        elif re.search("<title>302 Found</title>", res):
+            raise RuntimeError("Cookie失效") 
         try:
-            wid_json_loads = json.loads(res.text)
+            wid_json_loads = json.loads(res)
             wid = wid_json_loads['datas']['getMyTodayReportWid']['rows'][0]['WID']
             daily_report_data['WID'] = wid
         except json.decoder.JSONDecodeError:
@@ -105,7 +105,6 @@ class Reportor(object):
             return 1
 
         # check
-        daily_report_check_url = self.daily_report_check_url
         check_data = {
             'pageNumber': '1',
             'pageSize': '10',
@@ -113,16 +112,13 @@ class Reportor(object):
             'KSRQ': NEED_DATE,
             'JSRQ': NEED_DATE,
         }
-        res = requests.post(daily_report_check_url, data=check_data, headers=headers)
-        if res.status_code != 200:
-            print("网络错误")
-            return 1
-        res.encoding = 'utf-8'
-        if re.search("<title>统一身份认证</title>", res.text):
-            # print("Cookie失效")
+        res = get_request(self.host, "POST", self.daily_report_check_url, check_data, headers)
+        if re.search("<title>统一身份认证</title>", res):
             raise RuntimeError("Cookie失效")
+        elif re.search("<title>302 Found</title>", res):
+            raise RuntimeError("Cookie失效") 
         try:
-            parsed_res = json.loads(res.text)
+            parsed_res = json.loads(res)
         except json.decoder.JSONDecodeError:
             print("json解析失败")
             return 1
@@ -138,17 +134,13 @@ class Reportor(object):
             "NEED_CHECKIN_DATE": NEED_DATE,
             "CZRQ": NEED_DATE+" 00:00:00",
         })
-        daily_report_save_url = self.daily_report_save_url
-        res = self.sess.post(daily_report_save_url, data=daily_report_data, headers=headers)
-        if res.status_code != 200:
-            print("网络错误")
-            return 1
-        res.encoding = 'utf-8'
-        if re.search("<title>统一身份认证</title>", res.text):
-            # print("Cookie失效")
+        res = get_request(self.host, "POST", self.daily_report_save_url, daily_report_data, headers)
+        if re.search("<title>统一身份认证</title>", res):
             raise RuntimeError("Cookie失效")
+        elif re.search("<title>302 Found</title>", res):
+            raise RuntimeError("Cookie失效") 
         try:
-            parsed_res = json.loads(res.text)
+            parsed_res = json.loads(res)
         except json.decoder.JSONDecodeError:
             print("json解析失败")
             return 1
@@ -160,25 +152,19 @@ class Reportor(object):
             return 1
 
     def _temp_report(self, NEED_DATE, DAY_TIME, temp_report_data):
-        # check
-        temp_report_check_url = self.temp_report_check_url
         check_data = {
             "USER_ID": temp_report_data["USER_ID"],
             "NEED_DATE": NEED_DATE,
             "DAY_TIME": DAY_TIME,
         }
-
-        res = self.sess.post(temp_report_check_url, data=check_data, headers=headers)
-        if res.status_code != 200:
-            print("网络错误")
-            return 1
-        res.encoding = 'utf-8'
-        if re.search('"NEED_DATE":"{}","DAY_TIME":"{}"'.format(NEED_DATE, DAY_TIME), res.text) is not None:
+        res = get_request(self.host, "POST", self.temp_report_check_url, check_data, headers)
+        if re.search("<title>统一身份认证</title>", res):
+            raise RuntimeError("Cookie失效")
+        elif re.search("<title>302 Found</title>", res):
+            raise RuntimeError("Cookie失效") 
+        if re.search('"NEED_DATE":"{}","DAY_TIME":"{}"'.format(NEED_DATE, DAY_TIME), res) is not None:
             print("temp report {} has finished".format(DAY_TIME))
             return int(DAY_TIME)
-        elif re.search("<title>统一身份认证</title>", res.text):
-            # print("Cookie失效")
-            raise RuntimeError("Cookie失效")
 
         # save
         DAY_TIME_DISPLAY = {
@@ -192,19 +178,16 @@ class Reportor(object):
             "NEED_DATE": NEED_DATE,
         })
 
-        res = self.sess.post(self.temp_report_save_url, data=temp_report_data, headers=headers)
-        if res.status_code != 200:
-            print("网络错误")
-            return 1
-        res.encoding = 'utf-8'
+        res = get_request(self.host, "POST", self.temp_report_save_url, temp_report_data, headers)
+        if re.search("<title>统一身份认证</title>", res):
+            raise RuntimeError("Cookie失效")
+        elif re.search("<title>302 Found</title>", res):
+            raise RuntimeError("Cookie失效") 
         try:
-            assert re.search(r'"T_REPORT_TEMPERATURE_YJS_SAVE":(?P<r_value>\d)', res.text)["r_value"] == '1'
+            assert re.search(r'"T_REPORT_TEMPERATURE_YJS_SAVE":(?P<r_value>\d)', res)["r_value"] == '1'
             print("temp report {} sucessful".format(DAY_TIME))
             return int(DAY_TIME)  # 打卡成功
         except Exception:
-            if re.search("<title>统一身份认证</title>", res.text):
-                # print("Cookie失效")
-                raise RuntimeError("Cookie失效")
             time.sleep(5)
             return 0
 
@@ -215,6 +198,7 @@ class Reportor(object):
             print(e)
             if server_url is not None:
                 requests.get(url=server_url+f'?text={e}，上服务器看看我还有救吗')
+            exit(0)
         except Exception:
             return 1
 
@@ -225,6 +209,7 @@ class Reportor(object):
             print(e)
             if server_url is not None:
                 requests.get(url=server_url+f'?text={e}，上服务器看看我还有救吗')
+            exit(0)
         except Exception:
             return 1
 

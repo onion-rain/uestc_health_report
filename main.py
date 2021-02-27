@@ -11,6 +11,7 @@ from personal_info import server_url, webdriver_path, daily_report_data, temp_re
 
 from apscheduler.schedulers.blocking import BlockingScheduler
 
+MAX_TRY = 20
 
 headers = {
     "Cookie": ""
@@ -218,24 +219,31 @@ def daily_check(reportor, daily_report_data, temp_report_data, date_str=None):
         date_str = datetime.now().strftime("%Y-%m-%d")
         print("当前时间：" + str(datetime.now()))
     # 平安打卡
-    while(reportor.daily_report(date_str, daily_report_data)):
-        continue
-    # 体温上报
-    r_value_list = []
-    for id in range(1, 4):
-        while(id not in r_value_list):
-            r_value_list.append(reportor.temp_report(date_str, str(id), temp_report_data))
+    for _ in range(MAX_TRY):
+        if reportor.daily_report(date_str, daily_report_data) == 0:
+            print("{} day {} report complete!\n".format(daily_report_data["USER_NAME"], date_str))
+            return date_str
+    # 打卡失败
+    print("{} day {} report failed!\n".format(daily_report_data["USER_NAME"], date_str))
+    return None
+    # # 体温上报
+    # r_value_list = []
+    # for id in range(1, 4):
+    #     while(id not in r_value_list):
+    #         r_value_list.append(reportor.temp_report(date_str, str(id), temp_report_data))
     # 四项打卡全部完成
-    print("{} day {} report complete!\n".format(daily_report_data["USER_NAME"], date_str))
-    return date_str
 
 
 def check_job(reportor, daily_report_data, temp_report_data):
     reportor.login()
+    date_str = []
     for id in range(len(daily_report_data)):
-        date_str = daily_check(reportor, daily_report_data[id], temp_report_data[id])
+        date_str.append(daily_check(reportor, daily_report_data[id], temp_report_data[id]))
     if server_url is not None:
-        requests.get(url=server_url+f'?text={date_str}打卡完成')
+        if None in date_str:
+            requests.get(url=server_url+f'?text={date_str}打卡失败')
+        # else:
+        #     requests.get(url=server_url+f'?text={date_str}打卡完成')
 
 
 if __name__ == "__main__":

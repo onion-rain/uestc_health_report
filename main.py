@@ -252,7 +252,7 @@ if __name__ == "__main__":
     scheduler_report = BlockingScheduler()
     scheduler_report.add_job(check_job, 'cron', day='*', hour="0", minute="0", args=[
         reportor, daily_report_data, temp_report_data
-    ])
+    ], misfire_grace_time=300)
     print("job started")
     scheduler_report.start()
     if server_url is not None:

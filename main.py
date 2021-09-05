@@ -7,6 +7,7 @@ import time
 import pickle
 
 from selenium import webdriver
+from selenium.webdriver.firefox.service import Service
 from personal_info import server_url, webdriver_path, daily_report_data, temp_report_data
 
 from apscheduler.schedulers.blocking import BlockingScheduler
@@ -42,10 +43,13 @@ class Reportor(object):
         options = webdriver.firefox.options.Options()
         options.add_argument('--headless')  # 无窗口
         options.add_argument('--incognito')  # 无痕
+        driver_service=Service(webdriver_path)
+        driver_service.start()
         driver = webdriver.Firefox(executable_path=webdriver_path, options=options)
         def update_cookies():
             Cookies = driver.get_cookies()
             driver.quit()
+            driver_service.stop()
             headers["Cookie"] = cookies2str(Cookies)
         def _login(i):
             print("第{}次尝试登录".format(i))

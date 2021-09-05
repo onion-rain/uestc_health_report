@@ -7,7 +7,7 @@ import time
 import pickle
 
 from selenium import webdriver
-from personal_info import server_url, webdriver_path, daily_report_data, temp_report_data, login_data
+from personal_info import server_url, webdriver_path, daily_report_data, temp_report_data
 
 from apscheduler.schedulers.blocking import BlockingScheduler
 

@@ -5,6 +5,12 @@ server_url = None  # 推送服务器url
 webdriver_path = r"D:/geckodriver.exe"
 
 daily_report_data = [{
+    "login_data" : {
+        # 学号
+        "username":'',
+        # 密码
+        "password":'',
+    },
     # 学号
     "USER_ID": "2020xxxx",
     # 姓名
@@ -79,10 +85,3 @@ for i in range(len(daily_report_data)):
     temp_report_data[i]['DEPT_NAME'] = daily_report_data[i]['DEPT_NAME']
     temp_report_data[i]['DEPT_CODE'] = daily_report_data[i]['DEPT_CODE']
     temp_report_data[i]['WID'] = daily_report_data[i]['WID']
-
-login_data = {
-    # 学号
-    "username":'',
-    # 密码
-    "password":'',
-}

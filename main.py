@@ -234,10 +234,11 @@ def daily_check(reportor, daily_report_data, temp_report_data, date_str=None):
     # 四项打卡全部完成
 
 
-def check_job(reportor, daily_report_data, temp_report_data):
-    reportor.login()
+def check_job(daily_report_data, temp_report_data):
     date_str = []
     for id in range(len(daily_report_data)):
+        reportor = Reportor(daily_report_data[id]["login_data"]['username'], daily_report_data[id]["login_data"]['password'])
+        reportor.login()
         date_str.append(daily_check(reportor, daily_report_data[id], temp_report_data[id]))
     if server_url is not None:
         if None in date_str:
@@ -247,11 +248,10 @@ def check_job(reportor, daily_report_data, temp_report_data):
 
 
 if __name__ == "__main__":
-    reportor = Reportor(login_data['username'], login_data['password'])
-    check_job(reportor, daily_report_data, temp_report_data)
+    check_job(daily_report_data, temp_report_data)
     scheduler_report = BlockingScheduler()
     scheduler_report.add_job(check_job, 'cron', day='*', hour="0", minute="0", args=[
-        reportor, daily_report_data, temp_report_data
+        daily_report_data, temp_report_data
     ], misfire_grace_time=300)
     print("job started")
     scheduler_report.start()

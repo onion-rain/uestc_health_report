@@ -4,6 +4,11 @@
 
 注意！！！！！仅做学习使用，禁止用来瞒报打卡，违者后果自负
 
+## 2021.09.05更新：
+学校似乎已经修复登录一个账号给所有人打卡的bug，
+新版本程序略微修改personal_info.py格式，新增打卡人账号与密码属性。
+![改动](readme_imgs/20210905change.png)
+
 ## selenium以及geckodriver
 
 需要selenium模块来模拟浏览器操作，需要下载firefox浏览器的[geckodriver](https://github.com/mozilla/geckodriver/releases)。

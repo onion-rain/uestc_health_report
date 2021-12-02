@@ -22,7 +22,7 @@ import base64
 from my_request import get_request
 from slide import SlideCrack
 
-MAX_TRY = 3
+MAX_TRY = 10
 
 headers = {
     "Cookie": ""

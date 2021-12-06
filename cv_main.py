@@ -1,31 +1,20 @@
-import requests
-import json
-import re
-from datetime import datetime
+import base64
 import time
-import pickle
+from datetime import datetime
 
-from selenium import webdriver
-from personal_info import server_url, webdriver_path, daily_report_data, temp_report_data, login_data
-# from personal_info import server_url, daily_report_data, temp_report_data, login_data
-
+import requests
 from apscheduler.schedulers.blocking import BlockingScheduler
-
+from selenium import webdriver
 from selenium.webdriver import ActionChains
+from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.common.by import By
-from selenium.webdriver import ActionChains
-from PIL import Image
-from io import BytesIO
-from urllib.parse import urljoin
-import cv2
-import numpy as np
-import base64
+from selenium.webdriver.firefox.service import Service
 
-from personal_info import daily_report_data, temp_report_data, login_data
-from slide import SlideCrack
 from main import Reportor
+from personal_info import daily_report_data, temp_report_data
+from personal_info import server_url, webdriver_path, login_data
+from slide import SlideCrack
 
 
 headers = {
@@ -38,7 +27,7 @@ def cookies2str(cookies):
     cookiestr = ';'.join(item for item in cookie)
     return cookiestr
 
-
+from selenium.webdriver.firefox.firefox_binary import FirefoxBinary
 class Reportor_cv(Reportor):
     def __init__(self, username, password):
         self.username = username
@@ -50,11 +39,25 @@ class Reportor_cv(Reportor):
         self.temp_report_check_url = "http://eportal.uestc.edu.cn/jkdkapp/sys/lwReportEpidemicStu/mobile/tempReport/getMyTempReportDatas.do?"
         self.temp_report_save_url = "http://eportal.uestc.edu.cn/jkdkapp/sys/lwReportEpidemicStu/mobile/tempReport/T_REPORT_TEMPERATURE_YJS_SAVE.do?"
         self.sess = requests.Session()
-        
-        self.driver = webdriver.Firefox(executable_path=webdriver_path)
+
+        options = webdriver.firefox.options.Options()
+        options.add_argument('--headless')  # 无窗口
+        options.add_argument('--incognito')  # 无痕
+        self.driver_service = Service(webdriver_path)
+        self.driver_service.start()
+
+        binary = FirefoxBinary("/Applications/Firefox.app/Contents/MacOS/firefox")
+
+        self.driver = webdriver.Firefox(firefox_binary=binary, executable_path=webdriver_path, options=options)
         self.wait = WebDriverWait(self.driver, 100)
         self.login()
         self.update_cookies()
+
+    def update_cookies(self):
+        cookies = self.driver.get_cookies()
+        self.driver.quit()
+        self.driver_service.stop()
+        headers["Cookie"] = cookies2str(cookies)
 
     def login(self):
         # self.driver.get(self.daily_report_url)
@@ -173,6 +176,7 @@ def daily_check(reportor, daily_report_data, temp_report_data, date_str=None):
 
 
 def check_job(daily_report_data, temp_report_data):
+
     reportor = Reportor_cv(login_data['username'], login_data['password'])
     date_str = daily_check(reportor, daily_report_data, temp_report_data)
     # if server_url is not None:

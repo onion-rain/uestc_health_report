@@ -7,7 +7,7 @@ import time
 
 from selenium import webdriver
 from selenium.webdriver.firefox.service import Service
-from personal_info import server_url, webdriver_path, daily_report_data, temp_report_data
+from personal_info import *
 
 from apscheduler.schedulers.blocking import BlockingScheduler
 

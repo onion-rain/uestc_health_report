@@ -74,7 +74,6 @@ class SlideCrack(object):
         back_pic = cv2.cvtColor(back, cv2.COLOR_GRAY2RGB)
         x = self.template_match(slide_pic, back_pic)
         # 输出横坐标, 即 滑块在图片上的位置
-        print(x)
         return x
 
 

@@ -94,7 +94,7 @@ class Reporter(object):
             self.driver.find_element_by_xpath('//*[@id="password"]').send_keys(self.password)
             self.driver.find_element_by_xpath('//*[@id="casLoginForm"]/p[4]/button').click()
 
-            time.sleep(1)
+            WebDriverWait(self.driver, 5).until(EC.presence_of_element_located((By.TAG_NAME, "canvas")))
             self.get_captcha1()
             self.get_captcha2()
             # 滑块图片
@@ -366,4 +366,4 @@ if __name__ == "__main__":
     print("job started")
     scheduler_report.start()
     if server_url is not None:
-        requests.get(url=server_url+f'我挂了')
+        requests.get(url=server_url + f'我挂了')

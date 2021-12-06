@@ -16,8 +16,6 @@ from selenium.webdriver.support.ui import WebDriverWait
 
 import argparse
 from my_request import get_request
-# from personal_info import daily_report_data, temp_report_data
-# from personal_info import server_url, webdriver_path
 from accounts import *
 from slide import SlideCrack
 
@@ -62,7 +60,7 @@ class Reporter(object):
         self.temp_report_check_url = "/jkdkapp/sys/lwReportEpidemicStu/mobile/tempReport/getMyTempReportDatas.do?"
         self.temp_report_save_url = "/jkdkapp/sys/lwReportEpidemicStu/mobile/tempReport/T_REPORT_TEMPERATURE_YJS_SAVE.do?"
         options = webdriver.firefox.options.Options()
-        # options.add_argument('--headless')  # 无窗口
+        options.add_argument('--headless')  # 无窗口
         options.add_argument('--incognito')  # 无痕
         self.driver_service = Service(webdriver_path)
         self.driver_service.start()

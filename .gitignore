@@ -2,7 +2,9 @@
 *.pyc
 personal_info.py
 *.log
-log.txt
-bg.png
-front.png
-3.png
+*.txt
+*.png
+readme_imgs
+accounts.py
+.idea
+geckodriver

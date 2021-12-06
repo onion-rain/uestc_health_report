@@ -4,6 +4,17 @@
 
 注意！！！！！仅做学习使用，禁止用来瞒报打卡，违者后果自负
 
+## 2021.12.03更新
+学校似乎又修复了登录漏洞，现在发现只有先完成滑块后才能登陆，只有滑块版本能用了。
+```bash
+python cv_main.py
+```
+然后推荐一个微信消息在线推送服务：[pushplus](https://pushplus.hxtrip.com/)
+
+将`personal_info.py`中的`server_url`设置为`f"http://pushplus.hxtrip.com/send?token=your_token_of_pushplus&title=打卡通知&template=html&content="`
+
+如果打卡失败或者登陆失败，脚本会将失败的消息推送至你的微信
+
 ## 2021.09.05更新：
 学校似乎已经修复登录一个账号给所有人打卡的bug，
 新版本程序略微修改personal_info.py格式，新增打卡人账号与密码属性。

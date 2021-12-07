@@ -2,7 +2,7 @@ import base64
 import json
 import re
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
 
 import requests
 from apscheduler.schedulers.blocking import BlockingScheduler
@@ -49,9 +49,6 @@ class Reporter(object):
         self.temp_report_save_url = "http://eportal.uestc.edu.cn/jkdkapp/sys/lwReportEpidemicStu/mobile/tempReport/T_REPORT_TEMPERATURE_YJS_SAVE.do?"
         self.sess = requests.Session()
 
-        options = webdriver.firefox.options.Options()
-        options.add_argument('--headless')  # 无窗口
-        options.add_argument('--incognito')  # 无痕
         self.driver_service = Service(webdriver_path)
         self.driver_service.start()
         self.wid_url = '/jkdkapp/sys/lwReportEpidemicStu/modules/dailyReport/getMyTodayReportWid.do?'
@@ -89,12 +86,12 @@ class Reporter(object):
             print("第{}次尝试登录".format(i))
             self.driver.get(self.login_url)
 
-            WebDriverWait(self.driver, 1).until(
+            self.wait.until(
                 EC.presence_of_element_located((By.XPATH, '//*[@id="username"]'))).send_keys(self.id)
             self.driver.find_element_by_xpath('//*[@id="password"]').send_keys(self.password)
             self.driver.find_element_by_xpath('//*[@id="casLoginForm"]/p[4]/button').click()
 
-            WebDriverWait(self.driver, 5).until(EC.presence_of_element_located((By.TAG_NAME, "canvas")))
+            self.wait.until(EC.presence_of_element_located((By.TAG_NAME, "canvas")))
             self.get_captcha1()
             self.get_captcha2()
             # 滑块图片
@@ -112,12 +109,16 @@ class Reporter(object):
         def _check():
             """return 1 为检测登陆成功"""
             try:
-                WebDriverWait(self.driver, 5).until(EC.presence_of_element_located(
+                self.wait.until(EC.presence_of_element_located(
                     (By.XPATH, "/html/body/header/header[1]/div/div/div[4]/div[1]/img"))).click()
-                username = self.driver.find_element_by_xpath('/html/body/div[5]/div[2]/div[2]').text
+                username = self.wait.until(EC.presence_of_element_located(
+                    (By.XPATH, "/html/body/div[5]/div[2]/div[2]"))).text
             except Exception:
-                err_msg = self.driver.find_element_by_id('msg').text
-                print(err_msg)
+                try:
+                    err_msg = self.driver.find_element_by_id('msg').text
+                    print(err_msg)
+                except Exception as e:
+                    print(e)
                 return 0
             else:
                 print("登录账号 ： {}".format(username))
@@ -208,20 +209,21 @@ class Reporter(object):
         with open('front.png', 'wb') as f:  # 保存图片到本地
             f.write(im_bytes)
 
-    def _daily_report(self):
+    def daily_report(self):
         # 获取WID
         wid_data = {
             'pageNumber': '1',
             'pageSize': '10',
             'USER_ID': self.id,
         }
-        res = get_request(self.host, "POST", self.daily_report_check_url, wid_data, headers)
+        res = get_request(self.host, "POST", self.wid_url, wid_data, headers)
         if re.search("<title>统一身份认证</title>", res):
             raise RuntimeError("Cookie失效")
         elif re.search("<title>302 Found</title>", res):
             raise RuntimeError("Cookie失效")
 
         orig_data = json.loads(res)
+        wid = orig_data['datas']['getMyTodayReportWid']['rows'][0]['WID']
         # check
         date = get_date()
         check_data = {
@@ -241,8 +243,18 @@ class Reporter(object):
             return 0  # 打卡成功
 
         # save
-        report_item = orig_data['datas']['getMyDailyReportDatasPc']['rows'][0]
-        report_item["CZRQ"] = get_datetime()
+        yesterday = get_yesterday()
+        check_data['KSRQ'] = yesterday
+        check_data['JSRQ'] = yesterday
+        res = get_request(self.host, "POST", self.daily_report_check_url, check_data, headers)
+        report_history = json.loads(res)
+        report_item = report_history['datas']['getMyDailyReportDatasPc']['rows'][0]
+        datetime = get_datetime()
+        report_item["CZRQ"] = datetime
+        report_item['WID'] = wid
+        report_item['NEED_CHECKIN_DATE'] = date
+        report_item['CREATED_AT'] = datetime
+
 
         res = get_request(self.host, "POST", self.daily_report_save_url, report_item, headers)
         if re.search("<title>统一身份认证</title>", res):
@@ -251,7 +263,7 @@ class Reporter(object):
             raise RuntimeError("Cookie失效")
         parsed_res = json.loads(res)
         if parsed_res['code'] == '0' and parsed_res['datas']['T_REPORT_EPIDEMIC_CHECKIN_YJS_SAVE'] == 1:
-            print("daily report sucessful")
+            print("Daily report successful")
             return 0  # 打卡成功
         else:
             print("打卡失败")
@@ -297,17 +309,6 @@ class Reporter(object):
             time.sleep(1)
             return 0
 
-    def daily_report(self):
-        try:
-            return self._daily_report()
-        except RuntimeError as e:
-            print(e)
-            if server_url is not None:
-                requests.get(url=server_url + f'{e}，上服务器看看我还有救吗')
-            exit(0)
-        except Exception as e2:
-            print(e2.__traceback__)
-
     def temp_report(self, NEED_DATE, DAY_TIME, temp_report_data):
         try:
             return self._temp_report(NEED_DATE, DAY_TIME, temp_report_data)
@@ -323,6 +324,10 @@ class Reporter(object):
 def get_date():
     return datetime.now().strftime("%Y-%m-%d")
 
+
+def get_yesterday():
+    yesterday = datetime.today() + timedelta(-1)
+    return yesterday.strftime("%Y-%m-%d")
 
 def get_datetime():
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")

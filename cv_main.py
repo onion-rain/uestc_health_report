@@ -1,3 +1,4 @@
+#
 import base64
 import json
 import re
@@ -366,7 +367,7 @@ if __name__ == "__main__":
     webdriver_path = args.driver_path
     check_job()
     scheduler_report = BlockingScheduler()
-    scheduler_report.add_job(check_job, 'cron', day='*', hour="8", minute="10", args=[
+    scheduler_report.add_job(check_job, 'cron', day='*', hour="9", minute="10", args=[
     ], misfire_grace_time=300)
     print("job started")
     scheduler_report.start()

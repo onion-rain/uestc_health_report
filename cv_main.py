@@ -25,7 +25,7 @@ headers = {
     "Cookie": ""
 }
 
-server_url = None
+server_url = None  # 推送服务器url
 webdriver_path = None
 
 
@@ -92,6 +92,7 @@ class Reporter(object):
             self.driver.find_element_by_xpath('//*[@id="casLoginForm"]/p[4]/button').click()
 
             self.wait.until(EC.presence_of_element_located((By.TAG_NAME, "canvas")))
+            time.sleep(5)
             self.get_captcha1()
             self.get_captcha2()
             # 滑块图片
@@ -111,6 +112,7 @@ class Reporter(object):
             try:
                 self.wait.until(EC.presence_of_element_located(
                     (By.XPATH, "/html/body/header/header[1]/div/div/div[4]/div[1]/img"))).click()
+                time.sleep(10)
                 username = self.wait.until(EC.presence_of_element_located(
                     (By.XPATH, "/html/body/div[5]/div[2]/div[2]"))).text
             except Exception:
@@ -119,6 +121,7 @@ class Reporter(object):
                     print(err_msg)
                 except Exception as e:
                     print(e)
+                time.sleep(10)
                 return 0
             else:
                 print("登录账号 ： {}".format(username))
@@ -126,9 +129,12 @@ class Reporter(object):
                 return 1
 
         for i in range(MAX_TRY):  # 重复尝试登陆十次
-            _login(i + 1)
-            if _check():
-                return
+            try:
+                _login(i + 1)
+                if _check():
+                    return
+            except Exception as e:
+                print(e)
         if server_url is not None:
             requests.get(url=server_url + f'登陆失败，上服务器看看我觉得我还有救')
         raise RuntimeError("登录失败")
@@ -240,15 +246,22 @@ class Reporter(object):
             raise RuntimeError("Cookie失效")
         parsed_res = json.loads(res)
         if parsed_res['datas']['getMyDailyReportDatasPc']['totalSize'] > 0:
+            print("今天已完成打卡，自动跳过！")
             return 0  # 打卡成功
 
-        # save
-        yesterday = get_yesterday()
-        check_data['KSRQ'] = yesterday
-        check_data['JSRQ'] = yesterday
-        res = get_request(self.host, "POST", self.daily_report_check_url, check_data, headers)
-        report_history = json.loads(res)
-        report_item = report_history['datas']['getMyDailyReportDatasPc']['rows'][0]
+        # 查找最近15天内的打卡记录
+        for i in range(1, 16):
+            oldtime = get_oldtime(i)
+            check_data['KSRQ'] = oldtime
+            check_data['JSRQ'] = oldtime
+            res = get_request(self.host, "POST", self.daily_report_check_url, check_data, headers)
+            report_history = json.loads(res)
+            try:
+                report_item = report_history['datas']['getMyDailyReportDatasPc']['rows'][0]
+                break
+            except IndexError:
+                print("%s天前无可用数据，继续回退!" % i)
+                continue
         datetime = get_datetime()
         report_item["CZRQ"] = datetime
         report_item['WID'] = wid
@@ -325,9 +338,9 @@ def get_date():
     return datetime.now().strftime("%Y-%m-%d")
 
 
-def get_yesterday():
-    yesterday = datetime.today() + timedelta(-1)
-    return yesterday.strftime("%Y-%m-%d")
+def get_oldtime(i):
+    oldtime = datetime.today() + timedelta(-i)
+    return oldtime.strftime("%Y-%m-%d")
 
 def get_datetime():
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -340,33 +353,33 @@ def daily_check(reporter):
             print("{} day {} report complete!\n".format(reporter.get_id(), get_datetime()))
             return
     # 打卡失败
+    if None in date_str:
+        requests.get(url=server_url + "{} day {} report failed!\n".format(reporter.get_id(), get_datetime()))
     print("{} day {} report failed!\n".format(reporter.get_id(), get_datetime()))
     return None
 
 
 def check_job():
-    date_str = []
     for account in account_list:
-        reporter = Reporter(account)
-        reporter.login()
-        daily_check(reporter)
-    if server_url is not None:
-        if None in date_str:
-            requests.get(url=server_url + f'{date_str}打卡失败')
-        # else:
-        #     requests.get(url=server_url+f'?text={date_str}打卡完成')
+        try:
+            reporter = Reporter(account)
+            reporter.login()
+            daily_check(reporter)
+        except Exception as e:
+            # 提醒有人打卡失败
+            requests.get(url=server_url + '%s day %s report failed!' % (reporter.get_id(), get_datetime()))
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(description='Process some integers.')
-    parser.add_argument('driver_path', metavar='driver_path', type=str,
-                        help='The path of driver')
-    args = parser.parse_args()
+    #parser = argparse.ArgumentParser(description='Process some integers.')
+    #parser.add_argument('driver_path', metavar='driver_path', type=str,
+    #                    help='The path of driver')
+    #args = parser.parse_args()
 
-    webdriver_path = args.driver_path
+    #webdriver_path = args.driver_path
     check_job()
     scheduler_report = BlockingScheduler()
-    scheduler_report.add_job(check_job, 'cron', day='*', hour="8", minute="10", args=[
+    scheduler_report.add_job(check_job, 'cron', day='*', hour="0", minute="10", args=[
     ], misfire_grace_time=300)
     print("job started")
     scheduler_report.start()
